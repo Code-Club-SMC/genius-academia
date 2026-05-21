@@ -44,6 +44,39 @@ router.post("/", protect, async (req, res) => {
   }
 });
 
+// PUT /api/inventory/:id — Update an asset
+router.put("/:id", protect, async (req, res) => {
+  try {
+    const { itemName, investorName, purchaseDate, originalCost, depreciationRate } = req.body;
+
+    if (!itemName || !purchaseDate || !originalCost) {
+      return res.status(400).json({ success: false, message: "itemName, purchaseDate, and originalCost are required" });
+    }
+
+    const asset = await Inventory.findByIdAndUpdate(
+      req.params.id,
+      {
+        itemName,
+        investorName: investorName || "Academy",
+        purchaseDate,
+        originalCost: Number(originalCost),
+        depreciationRate: depreciationRate != null ? Number(depreciationRate) : 10,
+      },
+      { new: true },
+    );
+
+    if (!asset) {
+      return res.status(404).json({ success: false, message: "Asset not found" });
+    }
+
+    console.log(`✏️ Asset updated: ${asset.itemName} — PKR ${asset.originalCost}`);
+    return res.status(200).json({ success: true, data: asset });
+  } catch (error) {
+    console.error("❌ Error updating asset:", error);
+    return res.status(500).json({ success: false, message: "Failed to update asset", error: error.message });
+  }
+});
+
 // DELETE /api/inventory/:id — Delete an asset
 router.delete("/:id", protect, async (req, res) => {
   try {

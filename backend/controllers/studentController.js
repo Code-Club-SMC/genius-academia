@@ -367,7 +367,13 @@ exports.trackPrint = async (req, res) => {
 
     res.json({
       success: true,
-      data: { receiptId, version, student: studentData },
+      data: {
+        receiptId,
+        version,
+        isOriginal: version === 1,
+        printedAt: new Date(),
+        student: studentData,
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
