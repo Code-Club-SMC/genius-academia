@@ -175,7 +175,8 @@ const Teachers = () => {
     try {
       setIsResettingPassword(true);
       const username = credentialTeacher.username;
-      const res = await fetch(`http://localhost:5000/api/auth/reset-password`, {
+      const API_BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
+      const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -57,7 +57,7 @@ import { usePDFReceipt } from "@/hooks/usePDFReceipt";
 import { exportStudentsToExcel } from "@/lib/exportUtils";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  import.meta.env.VITE_API_BASE_URL ?? "";
 
 // Helper function to get initials from name
 const getInitials = (name: string): string => {

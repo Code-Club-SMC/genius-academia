@@ -31,10 +31,10 @@ import { toast } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL ?? "/api";
 
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  import.meta.env.VITE_API_BASE_URL ?? "";
 
 export default function KioskRegister() {
   const [submitted, setSubmitted] = useState(false);

@@ -1,11 +1,15 @@
-// API Base URL - Auto-detect Codespaces or localhost
+// API Base URL - Auto-detect Codespaces, env var, or localhost
 const getApiBaseUrl = () => {
   // Check if we're in GitHub Codespaces
   if (typeof window !== 'undefined' && window.location.hostname.includes('.app.github.dev')) {
-    // Extract codespace name from current URL and construct backend URL
     const hostname = window.location.hostname;
     const codespaceBase = hostname.replace(/-\d+\.app\.github\.dev$/, '');
     return `https://${codespaceBase}-5000.app.github.dev/api`;
+  }
+  // Check environment variable
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl !== undefined) {
+    return envUrl;
   }
   // Fallback to localhost for local development
   return 'http://localhost:5000/api';

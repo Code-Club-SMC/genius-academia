@@ -151,7 +151,7 @@ export const AdmissionSlip = ({
                       src={
                         profilePhotoUrl.startsWith("http")
                           ? profilePhotoUrl
-                          : `http://localhost:5000${profilePhotoUrl}`
+                          : profilePhotoUrl
                       }
                       alt={student.studentName}
                       className="w-full h-full object-cover"
