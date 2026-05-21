@@ -11,11 +11,11 @@
  * - Premium Gold themed styling
  */
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Webcam from "react-webcam";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Camera, Upload, RefreshCw, X, User, CheckCircle2 } from "lucide-react";
+import { Camera, Upload, RefreshCw, X, User, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface ImageCaptureProps {
   value?: string;
@@ -83,14 +83,58 @@ export function ImageCapture({
 }: ImageCaptureProps) {
   const [mode, setMode] = useState<"idle" | "webcam" | "upload">("idle");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [webcamKey, setWebcamKey] = useState(0);
   const webcamRef = useRef<Webcam>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const config = sizeConfig[size];
 
+  // Cleanup camera stream on unmount
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
+
+  // Handle webcam user callback
+  const handleUserMedia = useCallback((stream: MediaStream) => {
+    streamRef.current = stream;
+    setCameraReady(true);
+    setCameraError(null);
+  }, []);
+
+  // Handle webcam errors
+  const handleUserMediaError = useCallback((error: string | DOMException) => {
+    console.error("Webcam error:", error);
+    setCameraReady(false);
+    if (typeof error === "string") {
+      setCameraError(error);
+    } else {
+      switch (error.name) {
+        case "NotAllowedError":
+          setCameraError("Camera access denied. Please allow camera permissions and try again.");
+          break;
+        case "NotFoundError":
+          setCameraError("No camera found on this device.");
+          break;
+        case "NotReadableError":
+          setCameraError("Camera is in use by another application. Please close other apps using the camera.");
+          break;
+        default:
+          setCameraError(`Camera error: ${error.message || "Unknown error"}`);
+      }
+    }
+  }, []);
+
   // Handle webcam capture
   const captureFromWebcam = useCallback(async () => {
-    if (!webcamRef.current) return;
+    if (!webcamRef.current || !cameraReady) return;
 
     setIsProcessing(true);
     try {
@@ -101,14 +145,21 @@ export function ImageCapture({
         const blob = await response.blob();
         const compressed = await compressImage(blob);
         onChange(compressed);
+        // Stop the stream after successful capture
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
         setMode("idle");
+        setCameraReady(false);
       }
     } catch (error) {
       console.error("Failed to capture image:", error);
+      setCameraError("Failed to capture image. Please try again.");
     } finally {
       setIsProcessing(false);
     }
-  }, [onChange]);
+  }, [onChange, cameraReady]);
 
   // Handle file upload
   const handleFileSelect = useCallback(
@@ -161,6 +212,13 @@ export function ImageCapture({
   const clearImage = useCallback(() => {
     onChange(null);
     setMode("idle");
+    // Stop stream if active
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    setCameraReady(false);
+    setCameraError(null);
   }, [onChange]);
 
   // Render preview if image exists
@@ -205,41 +263,85 @@ export function ImageCapture({
       <div className={cn("flex flex-col items-center gap-3", className)}>
         <div className="relative rounded-full overflow-hidden border-2 border-amber-500/30 shadow-lg">
           <Webcam
+            key={webcamKey}
             ref={webcamRef}
             audio={false}
             screenshotFormat="image/jpeg"
             videoConstraints={{
-              width: 300,
-              height: 300,
+              width: { ideal: 300 },
+              height: { ideal: 300 },
               facingMode: "user",
             }}
             className="w-48 h-48 object-cover"
+            onUserMedia={handleUserMedia}
+            onUserMediaError={handleUserMediaError}
           />
+          {!cameraReady && !cameraError && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <RefreshCw className="h-8 w-8 text-white animate-spin" />
+            </div>
+          )}
+          {cameraError && (
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4">
+              <AlertCircle className="h-8 w-8 text-red-400 mb-2" />
+              <p className="text-xs text-white text-center">{cameraError}</p>
+            </div>
+          )}
           {isProcessing && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <RefreshCw className="h-8 w-8 text-white animate-spin" />
             </div>
           )}
         </div>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            onClick={captureFromWebcam}
-            disabled={isProcessing}
-            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
-          >
-            <Camera className="h-4 w-4 mr-1" />
-            Capture
-          </Button>
+        {cameraError && (
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setMode("idle")}
-            disabled={isProcessing}
+            onClick={() => {
+              setCameraError(null);
+              setCameraReady(false);
+              if (streamRef.current) {
+                streamRef.current.getTracks().forEach((track) => track.stop());
+                streamRef.current = null;
+              }
+              // Force re-mount of Webcam component
+              setWebcamKey((prev) => prev + 1);
+            }}
+            className="text-xs"
           >
-            Cancel
+            <RefreshCw className="h-3 w-3 mr-1" />
+            Retry Camera
           </Button>
-        </div>
+        )}
+        {cameraReady && (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={captureFromWebcam}
+              disabled={isProcessing}
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
+            >
+              <Camera className="h-4 w-4 mr-1" />
+              Capture
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (streamRef.current) {
+                  streamRef.current.getTracks().forEach((track) => track.stop());
+                  streamRef.current = null;
+                }
+                setCameraReady(false);
+                setCameraError(null);
+                setMode("idle");
+              }}
+              disabled={isProcessing}
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
       </div>
     );
   }

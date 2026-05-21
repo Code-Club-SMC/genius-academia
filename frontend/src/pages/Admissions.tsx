@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { HeaderBanner } from "@/components/dashboard/HeaderBanner";
 import { Button } from "@/components/ui/button";
@@ -40,6 +40,18 @@ import { usePDFReceipt } from "@/hooks/usePDFReceipt";
 // API Base URL for config fetch
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+interface FormErrors {
+  studentName?: string;
+  fatherName?: string;
+  group?: string;
+  selectedClassId?: string;
+  selectedSessionId?: string;
+  parentCell?: string;
+  studentCell?: string;
+  totalFee?: string;
+  paidAmount?: string;
+}
 
 // TASK 1: Draft Persistence Key
 const ADMISSION_DRAFT_KEY = "academy_sparkle_admission_draft";
@@ -104,6 +116,10 @@ const Admissions = () => {
 
   // Student Photo State
   const [photo, setPhoto] = useState<string | null>(null);
+
+  // Validation Errors State
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   // Draft Persistence State
   const [draftSaved, setDraftSaved] = useState(false);
@@ -419,6 +435,160 @@ const Admissions = () => {
 
   const classSubjects = getClassSubjects();
 
+  // Validation helpers
+  const validatePhone = (phone: string): string | undefined => {
+    if (!phone) return undefined;
+    const cleaned = phone.replace(/[\s-]/g, "");
+    const pakRegex = /^(?:\+92|0092|0)?3\d{9}$/;
+    if (!pakRegex.test(cleaned)) {
+      return "Enter a valid Pakistani phone number (e.g., 03XX-XXXXXXX)";
+    }
+    return undefined;
+  };
+
+  const validateName = (name: string, field: string): string | undefined => {
+    if (!name.trim()) return `${field} is required`;
+    if (name.trim().length < 3) return `${field} must be at least 3 characters`;
+    if (name.trim().length > 100) return `${field} must be less than 100 characters`;
+    if (!/^[a-zA-Z\s.'-]+$/.test(name.trim())) return `${field} can only contain letters, spaces, and .'-`;
+    return undefined;
+  };
+
+  // Full form validation
+  const validateForm = useCallback((): FormErrors => {
+    const newErrors: FormErrors = {};
+
+    const nameError = validateName(studentName, "Student name");
+    if (nameError) newErrors.studentName = nameError;
+
+    const fatherError = validateName(fatherName, "Father's name");
+    if (fatherError) newErrors.fatherName = fatherError;
+
+    if (!group.trim()) {
+      newErrors.group = "Group is required";
+    } else if (group.trim().length < 2) {
+      newErrors.group = "Group must be at least 2 characters";
+    }
+
+    if (!selectedClassId) {
+      newErrors.selectedClassId = "Please select a class";
+    }
+
+    if (!selectedSessionId) {
+      newErrors.selectedSessionId = "Please select an academic session";
+    }
+
+    if (!parentCell.trim()) {
+      newErrors.parentCell = "Parent cell number is required";
+    } else {
+      const phoneError = validatePhone(parentCell);
+      if (phoneError) newErrors.parentCell = phoneError;
+    }
+
+    if (studentCell.trim()) {
+      const studentPhoneError = validatePhone(studentCell);
+      if (studentPhoneError) newErrors.studentCell = studentPhoneError;
+    }
+
+    if (!totalFee || Number(totalFee) <= 0) {
+      newErrors.totalFee = "Enter a valid fee amount greater than 0";
+    } else if (Number(totalFee) > 9999999) {
+      newErrors.totalFee = "Fee amount seems too high";
+    }
+
+    const paidAmountNum = Number(paidAmount) || 0;
+    const totalFeeNum = Number(totalFee) || 0;
+
+    if (paidAmount && paidAmountNum < 0) {
+      newErrors.paidAmount = "Amount cannot be negative";
+    } else if (paidAmountNum > totalFeeNum && totalFeeNum > 0) {
+      newErrors.paidAmount = "Received amount cannot exceed total fee";
+    }
+
+    if (paidAmountNum === 0 && totalFeeNum > 0) {
+      newErrors.paidAmount = "Initial payment required for active students";
+    }
+
+    return newErrors;
+  }, [studentName, fatherName, group, selectedClassId, selectedSessionId, parentCell, studentCell, totalFee, paidAmount]);
+
+  // Validate single field on blur
+  const validateField = useCallback((field: string, value: any) => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      switch (field) {
+        case "studentName": {
+          const err = validateName(value, "Student name");
+          if (err) newErrors.studentName = err;
+          else delete newErrors.studentName;
+          break;
+        }
+        case "fatherName": {
+          const err = validateName(value, "Father's name");
+          if (err) newErrors.fatherName = err;
+          else delete newErrors.fatherName;
+          break;
+        }
+        case "group": {
+          if (!value.trim()) newErrors.group = "Group is required";
+          else if (value.trim().length < 2) newErrors.group = "Group must be at least 2 characters";
+          else delete newErrors.group;
+          break;
+        }
+        case "selectedClassId": {
+          if (!value) newErrors.selectedClassId = "Please select a class";
+          else delete newErrors.selectedClassId;
+          break;
+        }
+        case "selectedSessionId": {
+          if (!value) newErrors.selectedSessionId = "Please select an academic session";
+          else delete newErrors.selectedSessionId;
+          break;
+        }
+        case "parentCell": {
+          if (!value.trim()) newErrors.parentCell = "Parent cell number is required";
+          else {
+            const err = validatePhone(value);
+            if (err) newErrors.parentCell = err;
+            else delete newErrors.parentCell;
+          }
+          break;
+        }
+        case "studentCell": {
+          if (value.trim()) {
+            const err = validatePhone(value);
+            if (err) newErrors.studentCell = err;
+            else delete newErrors.studentCell;
+          } else {
+            delete newErrors.studentCell;
+          }
+          break;
+        }
+        case "totalFee": {
+          if (!value || Number(value) <= 0) newErrors.totalFee = "Enter a valid fee amount greater than 0";
+          else if (Number(value) > 9999999) newErrors.totalFee = "Fee amount seems too high";
+          else delete newErrors.totalFee;
+          break;
+        }
+        case "paidAmount": {
+          const paidNum = Number(value) || 0;
+          const totalNum = Number(totalFee) || 0;
+          if (value && paidNum < 0) newErrors.paidAmount = "Amount cannot be negative";
+          else if (paidNum > totalNum && totalNum > 0) newErrors.paidAmount = "Received amount cannot exceed total fee";
+          else delete newErrors.paidAmount;
+          break;
+        }
+      }
+      return newErrors;
+    });
+  }, [totalFee]);
+
+  // Mark field as touched on blur
+  const handleBlur = useCallback((field: string, value: any) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    validateField(field, value);
+  }, [validateField]);
+
   // Calculate Discount when Custom Fee is used
   useEffect(() => {
     if (isCustomFeeMode && sessionPrice && sessionPrice > 0) {
@@ -548,50 +718,27 @@ const Admissions = () => {
   });
 
   const handleSaveAdmission = () => {
-    const selectedClass = getSelectedClass();
+    // Mark all fields as touched
+    const allTouched: Record<string, boolean> = {
+      studentName: true,
+      fatherName: true,
+      group: true,
+      selectedClassId: true,
+      selectedSessionId: true,
+      parentCell: true,
+      totalFee: true,
+      paidAmount: true,
+    };
+    setTouched(allTouched);
 
-    // Validation
-    if (
-      !studentName ||
-      !fatherName ||
-      !selectedClassId ||
-      !group ||
-      !parentCell
-    ) {
-      toast.error("Missing Information", {
-        description: "Please fill in all required fields",
-        duration: 3000,
-      });
-      return;
-    }
+    const validationErrors = validateForm();
+    setErrors(validationErrors);
 
-    if (!totalFee || Number(totalFee) <= 0) {
-      toast.error("Invalid Fee", {
-        description: "Please enter a valid total fee amount",
-        duration: 3000,
-      });
-      return;
-    }
-
-    // TASK 1: Safety Check - Prevent paidAmount from exceeding totalFee
-    const totalFeeNum = Number(totalFee);
-    const paidAmountNum = Number(paidAmount) || 0;
-
-    if (paidAmountNum > totalFeeNum) {
-      toast.error("Invalid Payment Amount", {
-        description: `Received amount (${paidAmountNum.toLocaleString()} PKR) cannot exceed total fee (${totalFeeNum.toLocaleString()} PKR)`,
+    if (Object.keys(validationErrors).length > 0) {
+      const firstError = Object.values(validationErrors)[0];
+      toast.error("Validation Error", {
+        description: firstError,
         duration: 4000,
-      });
-      setFeeValidationError("Received amount cannot exceed total fee");
-      return;
-    }
-
-    // ZERO-FEE PREVENTION: Warn if no payment received (for active students)
-    if (paidAmountNum === 0) {
-      toast.error("No Fee Received", {
-        description:
-          "Active students must have an initial fee payment. Set status to 'inactive' if this is intentional.",
-        duration: 5000,
       });
       return;
     }
@@ -621,6 +768,7 @@ const Admissions = () => {
     }));
 
     // Ensure we have a valid class name
+    const selectedClass = getSelectedClass();
     const classTitle =
       selectedClass?.classTitle || selectedClass?.className || "";
     if (!classTitle) {
@@ -637,7 +785,7 @@ const Admissions = () => {
       gender,
       class: classTitle,
       group,
-      subjects: subjectsWithFees, // Send as array of {name, fee} objects
+      subjects: subjectsWithFees,
       parentCell,
       studentCell: studentCell || "",
       address: address || "",
@@ -645,7 +793,7 @@ const Admissions = () => {
       admissionDate: new Date(admissionDate),
       totalFee: Number(totalFee),
       paidAmount: Number(paidAmount) || 0,
-      discountAmount: calculatedDiscount, // Session-based discount
+      discountAmount: calculatedDiscount,
       sessionRate:
         isSessionPriceMode && sessionPrice ? sessionPrice : undefined,
       classRef: selectedClassId,
@@ -675,7 +823,9 @@ const Admissions = () => {
     setTotalFee("");
     setPaidAmount("");
     setIsCustomFeeMode(false);
-    setFeeValidationError(""); // Clear validation error
+    setFeeValidationError("");
+    setErrors({});
+    setTouched({});
     setPhoto(null);
 
     // Clear localStorage draft
@@ -779,9 +929,16 @@ const Admissions = () => {
                   id="name"
                   value={studentName}
                   onChange={(e) => setStudentName(e.target.value)}
+                  onBlur={() => handleBlur("studentName", studentName)}
                   placeholder="Enter full name"
-                  className="bg-background"
+                  className={`bg-background ${errors.studentName && touched.studentName ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
+                {errors.studentName && touched.studentName && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.studentName}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -790,9 +947,16 @@ const Admissions = () => {
                   id="fatherName"
                   value={fatherName}
                   onChange={(e) => setFatherName(e.target.value)}
+                  onBlur={() => handleBlur("fatherName", fatherName)}
                   placeholder="Enter father's name"
-                  className="bg-background"
+                  className={`bg-background ${errors.fatherName && touched.fatherName ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
+                {errors.fatherName && touched.fatherName && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.fatherName}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -822,21 +986,34 @@ const Admissions = () => {
               <div className="space-y-2">
                 <Label htmlFor="class">Group *</Label>
                 <Input
-                  id="class"
+                  id="group"
                   value={group}
                   onChange={(e) => setGroup(e.target.value)}
+                  onBlur={() => handleBlur("group", group)}
                   placeholder="e.g., Pre-Medical"
-                  className="bg-background"
+                  className={`bg-background ${errors.group && touched.group ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
+                {errors.group && touched.group && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.group}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="class">Class *</Label>
                 <Select
                   value={selectedClassId}
-                  onValueChange={setSelectedClassId}
+                  onValueChange={(val) => {
+                    setSelectedClassId(val);
+                    if (touched.selectedClassId) validateField("selectedClassId", val);
+                  }}
+                  onOpenChange={(open) => {
+                    if (!open) handleBlur("selectedClassId", selectedClassId);
+                  }}
                 >
-                  <SelectTrigger className="bg-background">
+                  <SelectTrigger className={`bg-background ${errors.selectedClassId && touched.selectedClassId ? "border-red-500" : ""}`}>
                     <SelectValue placeholder="Select class" />
                   </SelectTrigger>
                   <SelectContent>
@@ -847,6 +1024,12 @@ const Admissions = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.selectedClassId && touched.selectedClassId && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.selectedClassId}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -855,9 +1038,16 @@ const Admissions = () => {
                   id="parentCell"
                   value={parentCell}
                   onChange={(e) => setParentCell(e.target.value)}
+                  onBlur={() => handleBlur("parentCell", parentCell)}
                   placeholder="03XX-XXXXXXX"
-                  className="bg-background"
+                  className={`bg-background ${errors.parentCell && touched.parentCell ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
+                {errors.parentCell && touched.parentCell && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.parentCell}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -866,9 +1056,16 @@ const Admissions = () => {
                   id="studentCell"
                   value={studentCell}
                   onChange={(e) => setStudentCell(e.target.value)}
+                  onBlur={() => handleBlur("studentCell", studentCell)}
                   placeholder="03XX-XXXXXXX"
-                  className="bg-background"
+                  className={`bg-background ${errors.studentCell && touched.studentCell ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                 />
+                {errors.studentCell && touched.studentCell && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.studentCell}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2 sm:col-span-2">
@@ -951,9 +1148,15 @@ const Admissions = () => {
                 <Label htmlFor="session">Academic Session *</Label>
                 <Select
                   value={selectedSessionId}
-                  onValueChange={setSelectedSessionId}
+                  onValueChange={(val) => {
+                    setSelectedSessionId(val);
+                    if (touched.selectedSessionId) validateField("selectedSessionId", val);
+                  }}
+                  onOpenChange={(open) => {
+                    if (!open) handleBlur("selectedSessionId", selectedSessionId);
+                  }}
                 >
-                  <SelectTrigger className="bg-background">
+                  <SelectTrigger className={`bg-background ${errors.selectedSessionId && touched.selectedSessionId ? "border-red-500" : ""}`}>
                     <SelectValue placeholder="Select session" />
                   </SelectTrigger>
                   <SelectContent>
@@ -964,6 +1167,12 @@ const Admissions = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.selectedSessionId && touched.selectedSessionId && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.selectedSessionId}
+                  </p>
+                )}
               </div>
 
               {/* Custom Fee / Scholarship Toggle */}
@@ -1026,16 +1235,24 @@ const Admissions = () => {
                     type="number"
                     placeholder="0"
                     value={totalFee}
-                    onChange={(e) => setTotalFee(e.target.value)}
+                    onChange={(e) => {
+                      setTotalFee(e.target.value);
+                      if (touched.totalFee) {
+                        validateField("totalFee", e.target.value);
+                      }
+                    }}
+                    onBlur={() => handleBlur("totalFee", totalFee)}
                     readOnly={!isCustomFeeMode && !!selectedSessionId}
                     className={`${
-                      isCustomFeeMode
-                        ? "border-amber-400 bg-amber-50 ring-2 ring-amber-200"
-                        : isSessionPriceMode && sessionPrice && sessionPrice > 0
-                          ? "border-emerald-400 bg-emerald-50 cursor-not-allowed font-bold text-emerald-700"
-                          : selectedSessionId
-                            ? "border-yellow-300 bg-yellow-50 cursor-not-allowed"
-                            : ""
+                      errors.totalFee && touched.totalFee
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : isCustomFeeMode
+                          ? "border-amber-400 bg-amber-50 ring-2 ring-amber-200"
+                          : isSessionPriceMode && sessionPrice && sessionPrice > 0
+                            ? "border-emerald-400 bg-emerald-50 cursor-not-allowed font-bold text-emerald-700"
+                            : selectedSessionId
+                              ? "border-yellow-300 bg-yellow-50 cursor-not-allowed"
+                              : ""
                     }`}
                   />
                   {!isCustomFeeMode &&
@@ -1052,6 +1269,12 @@ const Admissions = () => {
                     </div>
                   )}
                 </div>
+                {errors.totalFee && touched.totalFee && (
+                  <p className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.totalFee}
+                  </p>
+                )}
                 {/* Session Rate Summary with Discount */}
                 {isSessionPriceMode && sessionPrice && sessionPrice > 0 && (
                   <div
@@ -1143,32 +1366,21 @@ const Admissions = () => {
                   onChange={(e) => {
                     const value = e.target.value;
                     setPaidAmount(value);
-
-                    // TASK 1: Real-time validation
-                    if (value && totalFee) {
-                      const paidNum = Number(value);
-                      const totalNum = Number(totalFee);
-                      if (paidNum > totalNum) {
-                        setFeeValidationError(
-                          "Received amount cannot exceed total fee",
-                        );
-                      } else {
-                        setFeeValidationError("");
-                      }
-                    } else {
-                      setFeeValidationError("");
+                    if (touched.paidAmount) {
+                      validateField("paidAmount", value);
                     }
                   }}
+                  onBlur={() => handleBlur("paidAmount", paidAmount)}
                   className={
-                    feeValidationError
+                    errors.paidAmount && touched.paidAmount
                       ? "border-red-500 focus-visible:ring-red-500"
                       : ""
                   }
                 />
-                {feeValidationError && (
+                {errors.paidAmount && touched.paidAmount && (
                   <p className="text-xs text-red-600 flex items-center gap-1 font-medium">
                     <AlertCircle className="h-3 w-3" />
-                    {feeValidationError}
+                    {errors.paidAmount}
                   </p>
                 )}
               </div>

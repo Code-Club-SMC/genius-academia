@@ -19,6 +19,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -48,6 +58,7 @@ import {
   CreditCard,
   Search,
   Download,
+  Pencil,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -330,6 +341,10 @@ const FinanceOverview = () => {
 const AssetRegistry = () => {
   const queryClient = useQueryClient();
   const [showDialog, setShowDialog] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [assetToDelete, setAssetToDelete] = useState<string | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
 
   // Form state
   const [itemName, setItemName] = useState("");
@@ -338,6 +353,13 @@ const AssetRegistry = () => {
   const [originalCost, setOriginalCost] = useState("");
   const [depreciationRate, setDepreciationRate] = useState("10");
   const [alsoRecordExpense, setAlsoRecordExpense] = useState(false);
+
+  // Edit form state
+  const [editItemName, setEditItemName] = useState("");
+  const [editInvestorName, setEditInvestorName] = useState("");
+  const [editPurchaseDate, setEditPurchaseDate] = useState("");
+  const [editOriginalCost, setEditOriginalCost] = useState("");
+  const [editDepreciationRate, setEditDepreciationRate] = useState("10");
 
   // Fetch assets from API
   const { data: assetsData, isLoading: assetsLoading } = useQuery({
@@ -412,6 +434,78 @@ const AssetRegistry = () => {
     },
   });
 
+  // Update asset mutation
+  const updateMutation = useMutation({
+    mutationFn: async (data: {
+      id: string;
+      itemName: string;
+      investorName: string;
+      purchaseDate: string;
+      originalCost: number;
+      depreciationRate: number;
+    }) => {
+      const res = await fetch(`${API_BASE_URL}/api/inventory/${data.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          itemName: data.itemName,
+          investorName: data.investorName,
+          purchaseDate: data.purchaseDate,
+          originalCost: data.originalCost,
+          depreciationRate: data.depreciationRate,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message || "Failed to update asset");
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory"] });
+      toast.success("Asset updated");
+      setEditModalOpen(false);
+      setEditingAsset(null);
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    setAssetToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (assetToDelete) {
+      deleteMutation.mutate(assetToDelete);
+      setDeleteConfirmOpen(false);
+      setAssetToDelete(null);
+    }
+  };
+
+  const handleEdit = (asset: Asset) => {
+    setEditingAsset(asset);
+    setEditItemName(asset.itemName);
+    setEditInvestorName(asset.investorName);
+    setEditPurchaseDate(new Date(asset.purchaseDate).toISOString().split("T")[0]);
+    setEditOriginalCost(String(asset.originalCost));
+    setEditDepreciationRate(String(asset.depreciationRate));
+    setEditModalOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingAsset || !editItemName || !editPurchaseDate || !editOriginalCost) {
+      toast.error("Please fill all required fields");
+      return;
+    }
+    updateMutation.mutate({
+      id: editingAsset.id,
+      itemName: editItemName,
+      investorName: editInvestorName || "Academy",
+      purchaseDate: editPurchaseDate,
+      originalCost: Number(editOriginalCost),
+      depreciationRate: Number(editDepreciationRate),
+    });
+  };
+
   const handleAdd = async () => {
     if (!itemName || !purchaseDate || !originalCost) {
       toast.error("Please fill all required fields");
@@ -461,10 +555,6 @@ const AssetRegistry = () => {
     } catch (err: any) {
       toast.error(err.message || "Failed to add asset");
     }
-  };
-
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
   };
 
   return (
@@ -608,14 +698,24 @@ const AssetRegistry = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(asset.id)}
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(asset)}
+                            className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(asset.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
@@ -714,6 +814,126 @@ const AssetRegistry = () => {
             </Button>
             <Button onClick={handleAdd} className="bg-red-600 hover:bg-red-700">
               Add Asset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-500" />
+              Delete Asset?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this asset? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmDelete();
+              }}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleteMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit Asset Dialog */}
+      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-5 w-5 text-blue-500" />
+              Edit Asset
+            </DialogTitle>
+            <DialogDescription>
+              Update the details of this registered asset.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Item Name *</Label>
+              <Input
+                placeholder="e.g. Generator 5kW"
+                value={editItemName}
+                onChange={(e) => setEditItemName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Investor Name</Label>
+              <Input
+                placeholder="e.g. Owner / Academy"
+                value={editInvestorName}
+                onChange={(e) => setEditInvestorName(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Purchase Date *</Label>
+                <Input
+                  type="date"
+                  value={editPurchaseDate}
+                  onChange={(e) => setEditPurchaseDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Original Cost (PKR) *</Label>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  value={editOriginalCost}
+                  onChange={(e) => setEditOriginalCost(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Depreciation Rate (% per Year)</Label>
+              <Input
+                type="number"
+                placeholder="10"
+                value={editDepreciationRate}
+                onChange={(e) => setEditDepreciationRate(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Standard: 10% for electronics, 5% for furniture
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveEdit}
+              disabled={updateMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {updateMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -24,13 +24,34 @@ interface PrintReceiptResult {
 async function loadLogoAsDataUrl(): Promise<string> {
   try {
     const response = await fetch("/logo.png");
+    if (!response.ok) {
+      console.error("Logo fetch failed:", response.status, response.statusText);
+      return "";
+    }
     const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    
+    // Detect actual image type from magic bytes
+    const buffer = await blob.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let mimeType = "image/png"; // default
+    
+    // JPEG magic bytes: FF D8 FF
+    if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+      mimeType = "image/jpeg";
+    }
+    // PNG magic bytes: 89 50 4E 47
+    else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+      mimeType = "image/png";
+    }
+    
+    console.log("Logo loaded - detected type:", mimeType, "size:", blob.size, "bytes");
+    
+    // Convert to base64 manually to ensure correct MIME type
+    const base64 = btoa(String.fromCharCode(...bytes));
+    const dataUrl = `data:${mimeType};base64,${base64}`;
+    
+    console.log("Logo data URL created, length:", dataUrl.length);
+    return dataUrl;
   } catch (error) {
     console.error("Error loading logo:", error);
     return "";

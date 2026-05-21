@@ -1,738 +1,879 @@
 import {
-  Document,
-  Page,
-  View,
-  Text,
-  Image,
-  StyleSheet,
+	Document,
+	Image,
+	Page,
+	StyleSheet,
+	Text,
+	View,
 } from "@react-pdf/renderer";
 
-// ==================== STYLES ====================
-const styles = StyleSheet.create({
-  page: {
-    width: "8.5in",
-    height: "5.5in",
-    padding: 20,
-    fontFamily: "Helvetica",
-    fontSize: 9,
-    backgroundColor: "#ffffff",
-  },
-  container: {
-    border: "2pt solid #1a365d",
-    borderRadius: 3,
-    height: "100%",
-    position: "relative",
-    overflow: "hidden",
-  },
+// ─────────────────────────────────────────────
+// DESIGN TOKENS (Strictly 3 Core Colors + Text)
+// ─────────────────────────────────────────────
+const C = {
+	red: "#c8102e", // Academy Red
+	white: "#ffffff", // Pure White
+	lightGrey: "#f4f5f7", // Content Background Grey
+	textDark: "#111827", // High-contrast text
+	textMuted: "#6b7280", // Secondary text
+	border: "#e5e7eb", // Thin dividers
+} as const;
 
-  // ===== HEADER BAR =====
-  headerBar: {
-    backgroundColor: "#1a365d",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  logo: {
-    width: 38,
-    height: 38,
-    objectFit: "contain",
-  },
-  academyName: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: "#ffffff",
-    letterSpacing: 0.3,
-  },
-  academyContact: {
-    fontSize: 7,
-    color: "#93c5fd",
-    marginTop: 2,
-  },
-  headerRight: {
-    alignItems: "flex-end",
-  },
-  receiptLabel: {
-    fontSize: 7,
-    color: "#93c5fd",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    fontWeight: 700,
-  },
-  serialNo: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: "#ffffff",
-    marginTop: 1,
-  },
-  dateStamp: {
-    fontSize: 7,
-    color: "#93c5fd",
-    marginTop: 2,
-  },
+// ─────────────────────────────────────────────
+// STYLES
+// ─────────────────────────────────────────────
+const S = StyleSheet.create({
+	// ── Page ──────────────────────────────────
+	page: {
+		width: 612,
+		height: 396,
+		padding: 0,
+		fontFamily: "Helvetica",
+		fontSize: 9,
+		backgroundColor: C.white,
+	},
+	root: {
+		flex: 1,
+		overflow: "hidden",
+	},
+	// ── Top accent bar (crisp white frame above the red header) ──
+	topBar: {
+		height: 4,
+		backgroundColor: C.red,
+	},
 
-  // ===== VERSION STRIP =====
-  versionStrip: {
-    paddingVertical: 3,
-    paddingHorizontal: 14,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  versionOriginal: {
-    backgroundColor: "#dcfce7",
-  },
-  versionCopy: {
-    backgroundColor: "#fee2e2",
-  },
-  versionText: {
-    fontSize: 7,
-    fontWeight: 700,
-    letterSpacing: 0.5,
-  },
-  versionOriginalText: {
-    color: "#166534",
-  },
-  versionCopyText: {
-    color: "#991b1b",
-  },
+	// ── Header (Redesigned to Red Academy) ────
+	header: {
+		backgroundColor: C.red,
+		flexDirection: "row",
+		alignItems: "center",
+		paddingHorizontal: 20,
+		paddingTop: 14,
+		paddingBottom: 14,
+		minHeight: 92,
+	},
+	hLeft: {
+		flex: 1,
+		justifyContent: "space-between",
+		paddingRight: 20,
+	},
+	hInstitutionRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 4,
+	},
+	hLogoImg: {
+		width: 36,
+		height: 36,
+		objectFit: "contain",
+		marginRight: 8,
+	},
+	hInstitution: {
+		fontSize: 16,
+		fontFamily: "Helvetica-Bold",
+		color: C.white,
+		letterSpacing: 0.2,
+	},
+	hDot: {
+		fontSize: 8,
+		color: "rgba(255, 255, 255, 0.4)",
+		marginHorizontal: 5,
+	},
+	hContact: {
+		fontSize: 7.5,
+		color: "rgba(255, 255, 255, 0.65)",
+		letterSpacing: 0.2,
+	},
+	hStudentName: {
+		fontSize: 20,
+		fontFamily: "Helvetica-Bold",
+		color: C.white,
+		letterSpacing: 0.1,
+		marginBottom: 4,
+	},
+	hMetaRow: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	hIdText: {
+		fontSize: 8,
+		fontFamily: "Helvetica-Bold",
+		color: "rgba(255, 255, 255, 0.85)",
+	},
+	hMetaDot: {
+		fontSize: 8,
+		color: "rgba(255, 255, 255, 0.3)",
+		marginHorizontal: 6,
+	},
+	hGroupPill: {
+		paddingVertical: 2,
+		paddingHorizontal: 6,
+		borderRadius: 2,
+		backgroundColor: "rgba(255, 255, 255, 0.15)",
+		marginRight: 5,
+		borderWidth: 0.5,
+		borderColor: "rgba(255, 255, 255, 0.3)",
+	},
+	hGroupText: {
+		fontSize: 7,
+		fontFamily: "Helvetica-Bold",
+		color: C.white,
+		letterSpacing: 0.5,
+	},
+	hModePill: {
+		paddingVertical: 2,
+		paddingHorizontal: 6,
+		borderRadius: 2,
+		backgroundColor: "rgba(255, 255, 255, 0.22)",
+		borderWidth: 0.5,
+		borderColor: "rgba(255, 255, 255, 0.4)",
+	},
+	hModeText: {
+		fontSize: 7,
+		color: C.white,
+		letterSpacing: 0.4,
+	},
 
-  // ===== BODY =====
-  body: {
-    flexDirection: "row",
-    flex: 1,
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 6,
-  },
+	// Header right
+	hRight: {
+		width: 145,
+		justifyContent: "space-between",
+		alignItems: "flex-end",
+	},
+	hReceiptLabel: {
+		fontSize: 7,
+		fontFamily: "Helvetica-Bold",
+		color: "rgba(255, 255, 255, 0.7)",
+		letterSpacing: 1.5,
+	},
+	hSerialWrap: {
+		flexDirection: "row",
+		alignItems: "baseline",
+		marginTop: 2,
+	},
+	hSerialPrefix: {
+		fontSize: 9,
+		fontFamily: "Helvetica-Bold",
+		color: "rgba(255, 255, 255, 0.6)",
+		marginRight: 3,
+	},
+	hSerial: {
+		fontSize: 20,
+		fontFamily: "Helvetica-Bold",
+		color: C.white,
+		lineHeight: 1,
+	},
+	hDate: {
+		fontSize: 7.5,
+		color: "rgba(255, 255, 255, 0.7)",
+		textAlign: "right",
+	},
+	hStatusPill: {
+		paddingVertical: 3,
+		paddingHorizontal: 10,
+		borderRadius: 2,
+		borderWidth: 1,
+	},
+	hStatusPaid: {
+		backgroundColor: C.white,
+		borderColor: C.white,
+	},
+	hStatusPending: {
+		backgroundColor: "transparent",
+		borderColor: C.white,
+	},
+	hStatusTextPaid: {
+		fontSize: 7,
+		fontFamily: "Helvetica-Bold",
+		color: C.red,
+		letterSpacing: 1,
+	},
+	hStatusTextPending: {
+		fontSize: 7,
+		fontFamily: "Helvetica-Bold",
+		color: C.white,
+		letterSpacing: 1,
+	},
 
-  // Left column: student info + photo
-  leftCol: {
-    flex: 1,
-    paddingRight: 14,
-  },
-  studentHeader: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 10,
-  },
-  photoBox: {
-    width: 64,
-    height: 64,
-    border: "1.5pt solid #cbd5e1",
-    backgroundColor: "#f8fafc",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
-  studentPhoto: {
-    width: 64,
-    height: 64,
-    objectFit: "cover",
-  },
-  photoPlaceholder: {
-    fontSize: 8,
-    color: "#94a3b8",
-    textAlign: "center",
-  },
-  studentBasicInfo: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  studentName: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: "#0f172a",
-    marginBottom: 3,
-  },
-  studentId: {
-    fontSize: 8,
-    color: "#64748b",
-    letterSpacing: 0.5,
-    marginBottom: 2,
-  },
-  groupBadge: {
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 2,
-    alignSelf: "flex-start",
-    marginTop: 2,
-  },
-  groupMedical: { backgroundColor: "#fef2f2", border: "0.5pt solid #fecaca" },
-  groupEngineering: {
-    backgroundColor: "#eff6ff",
-    border: "0.5pt solid #bfdbfe",
-  },
-  groupText: { fontSize: 7, fontWeight: 700 },
-  groupMedicalText: { color: "#dc2626" },
-  groupEngineeringText: { color: "#2563eb" },
+	// ── Info strip ────────────────────────────
+	infoStrip: {
+		backgroundColor: C.lightGrey,
+		borderBottomWidth: 1,
+		borderBottomColor: C.border,
+		flexDirection: "row",
+		paddingHorizontal: 20,
+		paddingVertical: 8,
+	},
+	iCell: {
+		flex: 1,
+	},
+	iCellBordered: {
+		flex: 1,
+		borderLeftWidth: 1,
+		borderLeftColor: C.border,
+		paddingLeft: 12,
+	},
+	iLabel: {
+		fontSize: 6,
+		fontFamily: "Helvetica-Bold",
+		color: C.textMuted,
+		letterSpacing: 0.8,
+		marginBottom: 2,
+	},
+	iValue: {
+		fontSize: 8.5,
+		fontFamily: "Helvetica-Bold",
+		color: C.textDark,
+	},
+	iValueLight: {
+		fontSize: 8.5,
+		color: C.textDark,
+	},
 
-  // Details grid
-  detailsGrid: {
-    marginTop: 4,
-  },
-  detailRow: {
-    flexDirection: "row",
-    marginBottom: 4,
-  },
-  detailItem: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  detailLabel: {
-    width: 48,
-    fontSize: 7,
-    fontWeight: 700,
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  detailValue: {
-    flex: 1,
-    fontSize: 9,
-    color: "#1e293b",
-    fontWeight: 500,
-  },
+	// ── Body ──────────────────────────────────
+	body: {
+		flex: 1,
+		flexDirection: "row",
+		backgroundColor: C.lightGrey,
+	},
 
-  // Subjects
-  subjectsRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginTop: 6,
-    paddingTop: 6,
-    borderTop: "0.5pt solid #e2e8f0",
-  },
-  subjectsLabel: {
-    width: 48,
-    fontSize: 7,
-    fontWeight: 700,
-    color: "#64748b",
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-    paddingTop: 1,
-  },
-  subjectsList: {
-    flex: 1,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 4,
-  },
-  subjectChip: {
-    backgroundColor: "#f1f5f9",
-    border: "0.5pt solid #e2e8f0",
-    borderRadius: 2,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-  },
-  subjectChipText: {
-    fontSize: 7,
-    color: "#334155",
-    fontWeight: 600,
-  },
-  subjectTimingText: {
-    fontSize: 5.5,
-    color: "#64748b",
-    marginTop: 1,
-  },
-  subjectTimingNotSet: {
-    fontSize: 5.5,
-    color: "#94a3b8",
-    fontStyle: "italic",
-    marginTop: 1,
-  },
+	// Left pane
+	lPane: {
+		flex: 1,
+		paddingHorizontal: 20,
+		paddingTop: 12,
+		paddingBottom: 8,
+	},
+	lPaneLabel: {
+		fontSize: 6,
+		fontFamily: "Helvetica-Bold",
+		color: C.textMuted,
+		letterSpacing: 1.2,
+		marginBottom: 8,
+		paddingBottom: 4,
+		borderBottomWidth: 1,
+		borderBottomColor: C.border,
+	},
 
-  // Divider
-  verticalDivider: {
-    width: 1,
-    backgroundColor: "#e2e8f0",
-  },
+	// Subject row
+	subRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 5,
+		paddingVertical: 6,
+		paddingHorizontal: 10,
+		backgroundColor: C.white,
+		borderRadius: 2,
+		borderLeftWidth: 3,
+		borderLeftStyle: "solid",
+		borderLeftColor: C.red,
+	},
+	subName: {
+		flex: 1,
+		fontSize: 9,
+		fontFamily: "Helvetica-Bold",
+		color: C.textDark,
+	},
+	subMeta: {
+		alignItems: "flex-end",
+	},
+	subFee: {
+		fontSize: 8,
+		fontFamily: "Helvetica-Bold",
+		color: C.textDark,
+	},
+	subTiming: {
+		fontSize: 6.5,
+		color: C.textMuted,
+		marginTop: 1,
+	},
+	subTimingNone: {
+		fontSize: 6.5,
+		color: C.textMuted,
+		marginTop: 1,
+		fontStyle: "italic",
+	},
+	noSubjects: {
+		fontSize: 8.5,
+		color: C.textMuted,
+		fontStyle: "italic",
+	},
 
-  // Right column: financial summary
-  rightCol: {
-    width: 185,
-    paddingLeft: 14,
-  },
-  feeCard: {
-    border: "1.5pt solid #e2e8f0",
-    borderRadius: 3,
-    overflow: "hidden",
-  },
-  feeCardPaid: { borderColor: "#86efac" },
-  feeCardPending: { borderColor: "#fca5a5" },
-  feeStatusBar: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    alignItems: "center",
-  },
-  feeStatusBarPaid: { backgroundColor: "#166534" },
-  feeStatusBarPending: { backgroundColor: "#991b1b" },
-  feeStatusText: {
-    fontSize: 10,
-    fontWeight: 700,
-    color: "#ffffff",
-    letterSpacing: 1,
-  },
-  feeBody: {
-    padding: 8,
-  },
-  feeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 3,
-  },
-  feeLabel: {
-    fontSize: 8,
-    color: "#64748b",
-    fontWeight: 500,
-  },
-  feeValue: {
-    fontSize: 9,
-    color: "#1e293b",
-    fontWeight: 700,
-  },
-  feeTotalRow: {
-    borderTop: "1pt solid #e2e8f0",
-    marginTop: 4,
-    paddingTop: 5,
-  },
-  discountLabel: { color: "#16a34a" },
-  discountValue: { color: "#16a34a" },
-  balanceDue: { color: "#dc2626" },
-  balanceClear: { color: "#16a34a" },
+	// Photo Wrap
+	photoWrap: {
+		flexDirection: "row",
+		alignItems: "flex-start",
+		marginBottom: 10,
+	},
+	photoBox: {
+		width: 46,
+		height: 46,
+		borderWidth: 1,
+		borderColor: C.border,
+		backgroundColor: C.white,
+		alignItems: "center",
+		justifyContent: "center",
+		overflow: "hidden",
+	},
+	photoImg: {
+		width: 46,
+		height: 46,
+		objectFit: "cover",
+	},
 
-  // Signature
-  signatureArea: {
-    marginTop: "auto",
-    paddingTop: 8,
-    alignItems: "flex-end",
-  },
-  signatureLine: {
-    width: 110,
-    borderBottom: "1pt solid #334155",
-    marginBottom: 3,
-  },
-  signatureLabel: {
-    fontSize: 6,
-    color: "#94a3b8",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
+	// Right pane
+	rPane: {
+		width: 190,
+		borderLeftWidth: 1,
+		borderLeftColor: C.border,
+		backgroundColor: C.white,
+		paddingHorizontal: 16,
+		paddingTop: 12,
+		paddingBottom: 12,
+		justifyContent: "space-between",
+	},
 
-  // ===== FOOTER =====
-  footer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 5,
-    paddingHorizontal: 14,
-    borderTop: "1pt solid #e2e8f0",
-    backgroundColor: "#fafafa",
-  },
-  footerWarning: {
-    fontSize: 7,
-    fontWeight: 700,
-    color: "#dc2626",
-  },
-  footerAddress: {
-    fontSize: 6,
-    color: "#94a3b8",
-    textAlign: "right",
-    maxWidth: 190,
-  },
+	// Balance hero
+	balanceSection: {
+		marginBottom: 10,
+		paddingBottom: 8,
+		borderBottomWidth: 1,
+		borderBottomColor: C.border,
+	},
+	balanceLabel: {
+		fontSize: 6,
+		fontFamily: "Helvetica-Bold",
+		color: C.textMuted,
+		letterSpacing: 1.2,
+		marginBottom: 3,
+	},
+	balanceRow: {
+		flexDirection: "row",
+		alignItems: "baseline",
+	},
+	balanceCurrency: {
+		fontSize: 10,
+		fontFamily: "Helvetica-Bold",
+		color: C.textMuted,
+		marginRight: 3,
+	},
+	balanceAmount: {
+		fontSize: 24,
+		fontFamily: "Helvetica-Bold",
+		lineHeight: 1,
+	},
+	balanceDue: { color: C.red },
+	balanceClear: { color: C.textDark },
+	balanceNote: {
+		fontSize: 7,
+		color: C.textMuted,
+		marginTop: 4,
+	},
 
-  // Watermark
-  watermark: {
-    position: "absolute",
-    top: "48%",
-    left: "50%",
-    transform: "translate(-50%, -50%) rotate(-30deg)",
-    fontSize: 48,
-    fontWeight: 700,
-    color: "rgba(220, 38, 38, 0.05)",
-    letterSpacing: 6,
-  },
-  academyWatermark: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%) rotate(-30deg)",
-    fontSize: 36,
-    fontWeight: 700,
-    color: "rgba(26, 54, 93, 0.04)",
-    letterSpacing: 8,
-  },
+	// Fee breakdown
+	feeSection: {
+		flex: 1,
+		marginBottom: 8,
+	},
+	feeSectionLabel: {
+		fontSize: 6,
+		fontFamily: "Helvetica-Bold",
+		color: C.textMuted,
+		letterSpacing: 1.0,
+		marginBottom: 6,
+	},
+	feeRow: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		paddingVertical: 4,
+		borderBottomWidth: 0.5,
+		borderBottomColor: C.border,
+	},
+	feeRowLast: {
+		borderBottomWidth: 0,
+	},
+	feeKey: {
+		fontSize: 8,
+		color: C.textMuted,
+	},
+	feeVal: {
+		fontSize: 8,
+		fontFamily: "Helvetica-Bold",
+		color: C.textDark,
+	},
+	feeValRed: {
+		color: C.red,
+	},
+
+	// Signature
+	sigSection: {
+		paddingTop: 8,
+		borderTopWidth: 1,
+		borderTopColor: C.border,
+	},
+	sigLine: {
+		borderBottomWidth: 1,
+		borderBottomColor: C.textDark,
+		marginBottom: 4,
+		width: 110,
+	},
+	sigLabel: {
+		fontSize: 6,
+		fontFamily: "Helvetica-Bold",
+		color: C.textMuted,
+		letterSpacing: 0.5,
+	},
+
+	// ── Version strip ─────────────────────────
+	versionStrip: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		paddingHorizontal: 20,
+		paddingVertical: 4,
+		borderTopWidth: 1,
+		borderTopColor: C.border,
+		backgroundColor: C.white,
+	},
+	versionTag: {
+		fontSize: 7,
+		fontFamily: "Helvetica-Bold",
+		letterSpacing: 0.8,
+	},
+	versionTagOriginal: { color: C.textDark },
+	versionTagDuplicate: { color: C.red },
+	versionMeta: {
+		fontSize: 6.5,
+		color: C.textMuted,
+	},
+
+	// ── Footer ────────────────────────────────
+	footer: {
+		height: 36,
+		backgroundColor: C.white,
+		borderTopWidth: 1,
+		borderTopColor: C.border,
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingHorizontal: 20,
+	},
+	fLeft: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	fRedDot: {
+		width: 4,
+		height: 4,
+		borderRadius: 2,
+		backgroundColor: C.red,
+		marginRight: 5,
+	},
+	fWarning: {
+		fontSize: 7.5,
+		fontFamily: "Helvetica-Bold",
+		color: C.red,
+	},
+	fSep: {
+		fontSize: 7.5,
+		color: C.border,
+		marginHorizontal: 5,
+	},
+	fNote: {
+		fontSize: 7,
+		color: C.textMuted,
+		fontStyle: "italic",
+	},
+	fRight: {
+		alignItems: "flex-end",
+	},
+	fAddress: {
+		fontSize: 6.5,
+		color: C.textDark,
+		fontFamily: "Helvetica-Bold",
+		textAlign: "right",
+	},
+	fSocial: {
+		fontSize: 6,
+		color: C.textMuted,
+		textAlign: "right",
+		marginTop: 1,
+	},
+
+	// ── Watermarks ────────────────────────────
+	wmGIA: {
+		position: "absolute",
+		top: "35%",
+		left: "25%",
+		fontSize: 88,
+		fontFamily: "Helvetica-Bold",
+		color: "rgba(200, 16, 46, 0.02)",
+		letterSpacing: 14,
+		transform: "rotate(-24deg)",
+	},
+	wmDuplicate: {
+		position: "absolute",
+		top: "42%",
+		left: "12%",
+		fontSize: 52,
+		fontFamily: "Helvetica-Bold",
+		color: "rgba(200, 16, 46, 0.04)",
+		letterSpacing: 8,
+		transform: "rotate(-24deg)",
+	},
 });
 
-// ==================== INTERFACES ====================
+// ─────────────────────────────────────────────
+// INTERFACES
+// ─────────────────────────────────────────────
 export interface StudentPDFData {
-  _id?: string;
-  studentId: string;
-  studentName: string;
-  fatherName: string;
-  class: string;
-  group: string;
-  parentCell?: string;
-  studentCell?: string;
-  totalFee: number;
-  sessionRate?: number;
-  paidAmount: number;
-  discountAmount?: number;
-  feeStatus: string;
-  admissionDate?: string | Date;
-  subjects?: Array<{
-    name: string;
-    fee: number;
-    timings?: Array<{
-      day: string;
-      startTime: string;
-      endTime: string;
-    }>;
-  }>;
-  photo?: string | null;
+	_id?: string;
+	studentId: string;
+	studentName: string;
+	fatherName: string;
+	class: string;
+	group: string;
+	mode?: string;
+	parentCell?: string;
+	studentCell?: string;
+	totalFee: number;
+	sessionRate?: number;
+	paidAmount: number;
+	discountAmount?: number;
+	feeStatus: string;
+	admissionDate?: string | Date;
+	subjects?: Array<{
+		name: string;
+		fee: number;
+		timings?: Array<{ day: string; startTime: string; endTime: string }>;
+	}>;
+	photo?: string | null;
 }
 
 export interface ReceiptPDFConfig {
-  receiptId: string;
-  version: number;
-  isOriginal: boolean;
-  printedAt: Date | string;
+	receiptId: string;
+	version: number;
+	isOriginal: boolean;
+	printedAt: Date | string;
 }
 
 interface ReceiptPDFProps {
-  student: StudentPDFData;
-  receiptConfig: ReceiptPDFConfig;
-  barcodeDataUrl?: string;
-  logoDataUrl?: string;
-  studentPhotoDataUrl?: string;
+	student: StudentPDFData;
+	receiptConfig: ReceiptPDFConfig;
+	logoDataUrl?: string;
+	studentPhotoDataUrl?: string;
 }
 
-// ==================== HELPERS ====================
-const formatDate = (date: Date | string | undefined): string => {
-  if (!date) return new Date().toLocaleDateString("en-GB");
-  return new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+const fmt = {
+	date(d: Date | string | undefined): string {
+		if (!d) return "—";
+		try {
+			const parsed = new Date(d);
+			if (isNaN(parsed.getTime())) return "—";
+			return parsed.toLocaleDateString("en-GB", {
+				day: "2-digit",
+				month: "short",
+				year: "numeric",
+			});
+		} catch {
+			return "—";
+		}
+	},
+	dateWithTime(d: Date | string | undefined): string {
+		if (!d) return "—";
+		try {
+			const parsed = new Date(d);
+			if (isNaN(parsed.getTime())) return "—";
+			return parsed.toLocaleDateString("en-GB", {
+				day: "2-digit",
+				month: "short",
+				year: "numeric",
+				hour: "2-digit",
+				minute: "2-digit",
+			});
+		} catch {
+			return "—";
+		}
+	},
+	currency(n: number): string {
+		return `PKR ${(n || 0).toLocaleString()}`;
+	},
+	phone(p: string | undefined): string {
+		if (!p) return "—";
+		const d = p.replace(/\D/g, "");
+		return d.length >= 10 ? `${d.slice(0, 4)}-${d.slice(4)}` : p;
+	},
+	className(c: string | undefined): string {
+		return c ? c.replace(/-/g, " ").replace(/\s+/g, " ").trim() : "—";
+	},
+	timing(
+		timings?: Array<{ day: string; startTime: string; endTime: string }>,
+	): string | null {
+		if (!timings?.length) return null;
+		return timings
+			.map((t) => `${t.day.slice(0, 3)}  ${t.startTime}–${t.endTime}`)
+			.join("   ·   ");
+	},
 };
 
-const formatCurrency = (amount: number): string => {
-  return `PKR ${(amount || 0).toLocaleString()}`;
-};
-
-const formatPhone = (phone: string | undefined): string => {
-  if (!phone) return "-";
-  const cleaned = phone.replace(/\D/g, "");
-  if (cleaned.length >= 10) {
-    return `${cleaned.slice(0, 4)}-${cleaned.slice(4)}`;
-  }
-  return phone;
-};
-
-const formatClassName = (className: string | undefined): string => {
-  if (!className) return "-";
-  return className.replace(/-/g, " ").replace(/\s+/g, " ").trim();
-};
-
-// ==================== COMPONENT ====================
+// ─────────────────────────────────────────────
+// COMPONENT
+// ─────────────────────────────────────────────
 export const ReceiptPDF = ({
-  student,
-  receiptConfig,
-  logoDataUrl,
-  studentPhotoDataUrl,
+	student,
+	receiptConfig,
+	logoDataUrl,
+	studentPhotoDataUrl,
 }: ReceiptPDFProps) => {
-  const balance = Math.max(
-    0,
-    (student.totalFee || 0) - (student.paidAmount || 0),
-  );
-  const isPaid = student.feeStatus === "paid" || balance === 0;
-  const isMedical = student.group?.toLowerCase().includes("medical");
+	const balance = Math.max(
+		0,
+		(student.totalFee || 0) - (student.paidAmount || 0),
+	);
+	const isPaid = student.feeStatus === "paid" || balance === 0;
+	const mode = student.mode ?? "Online";
 
-  return (
-    <Document>
-      <Page size={[612, 396]} style={styles.page}>
-        <View style={styles.container}>
-          {/* ===== HEADER BAR ===== */}
-          <View style={styles.headerBar}>
-            <View style={styles.headerLeft}>
-              {logoDataUrl ? (
-                <Image src={logoDataUrl} style={styles.logo} />
-              ) : (
-                <Image src="/logo.png" style={styles.logo} />
-              )}
-              <View>
-                <Text style={styles.academyName}>
-                  GENIUS ISLAMIAN'S ACADEMY
-                </Text>
-                <Text style={styles.academyContact}>
-                  091-5601600 / 0334-5852326
-                </Text>
-              </View>
-            </View>
-            <View style={styles.headerRight}>
-              <Text style={styles.receiptLabel}>Admission Receipt</Text>
-              <Text style={styles.serialNo}>S.No: {student.studentId}</Text>
-              <Text style={styles.dateStamp}>
-                {formatDate(receiptConfig.printedAt)}
-              </Text>
-            </View>
-          </View>
+	return (
+		<Document>
+			<Page size={[612, 396]} style={S.page}>
+				<View style={S.root}>
+					{/* ════ TOP RED BAR ════ */}
+					<View style={S.topBar} />
 
-          {/* ===== VERSION STRIP ===== */}
-          <View
-            style={[
-              styles.versionStrip,
-              receiptConfig.isOriginal
-                ? styles.versionOriginal
-                : styles.versionCopy,
-            ]}
-          >
-            <Text
-              style={[
-                styles.versionText,
-                receiptConfig.isOriginal
-                  ? styles.versionOriginalText
-                  : styles.versionCopyText,
-              ]}
-            >
-              {receiptConfig.isOriginal
-                ? "ORIGINAL COPY"
-                : `DUPLICATE — COPY #${receiptConfig.version}`}
-            </Text>
-            <Text
-              style={[
-                styles.versionText,
-                { fontSize: 6, fontWeight: 500 },
-                receiptConfig.isOriginal
-                  ? styles.versionOriginalText
-                  : styles.versionCopyText,
-              ]}
-            >
-              Receipt: {receiptConfig.receiptId}
-            </Text>
-          </View>
+					{/* ════ HEADER ════ */}
+					<View style={S.header}>
+						<View style={S.hLeft}>
+							<View style={S.hInstitutionRow}>
+								{logoDataUrl ? (
+									<Image src={logoDataUrl} style={S.hLogoImg} />
+								) : (
+									<Image src="/logo.png" style={S.hLogoImg} />
+								)}
+								<Text style={S.hInstitution}>GENIUS ISLAMIAN'S ACADEMY</Text>
+								<Text style={S.hDot}>·</Text>
+								<Text style={S.hContact}>091-3067016 · 0333-9365145</Text>
+							</View>
 
-          {/* ===== BODY ===== */}
-          <View style={styles.body}>
-            {/* LEFT COLUMN — Student Info */}
-            <View style={styles.leftCol}>
-              {/* Student photo + name row */}
-              <View style={styles.studentHeader}>
-                {/* Photo — squared */}
-                <View style={styles.photoBox}>
-                  {studentPhotoDataUrl ? (
-                    <Image
-                      src={studentPhotoDataUrl}
-                      style={styles.studentPhoto}
-                    />
-                  ) : (
-                    <Text style={styles.photoPlaceholder}>No{"\n"}Photo</Text>
-                  )}
-                </View>
-                <View style={styles.studentBasicInfo}>
-                  <Text style={styles.studentName}>{student.studentName}</Text>
-                  <Text style={styles.studentId}>ID: {student.studentId}</Text>
-                  <View
-                    style={[
-                      styles.groupBadge,
-                      isMedical ? styles.groupMedical : styles.groupEngineering,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.groupText,
-                        isMedical
-                          ? styles.groupMedicalText
-                          : styles.groupEngineeringText,
-                      ]}
-                    >
-                      {student.group || "General"}
-                    </Text>
-                  </View>
-                </View>
-              </View>
+							<Text style={S.hStudentName}>{student.studentName}</Text>
 
-              {/* Details */}
-              <View style={styles.detailsGrid}>
-                <View style={styles.detailRow}>
-                  <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Father</Text>
-                    <Text style={styles.detailValue}>{student.fatherName}</Text>
-                  </View>
-                </View>
-                <View style={styles.detailRow}>
-                  <View style={styles.detailItem}>
-                    <Text style={styles.detailLabel}>Class</Text>
-                    <Text style={styles.detailValue}>
-                      {formatClassName(student.class)}
-                    </Text>
-                  </View>
-                  <View style={[styles.detailItem, { marginLeft: 10 }]}>
-                    <Text style={styles.detailLabel}>Contact</Text>
-                    <Text style={styles.detailValue}>
-                      {formatPhone(student.parentCell || student.studentCell)}
-                    </Text>
-                  </View>
-                </View>
-              </View>
+							<View style={S.hMetaRow}>
+								<Text style={S.hIdText}>ID: {student.studentId}</Text>
+								<Text style={S.hMetaDot}>·</Text>
+								<View style={S.hGroupPill}>
+									<Text style={S.hGroupText}>{student.group || "General"}</Text>
+								</View>
+								<View style={S.hModePill}>
+									<Text style={S.hModeText}>{mode}</Text>
+								</View>
+							</View>
+						</View>
 
-              {/* Subjects as chips with timings */}
-              {student.subjects && student.subjects.length > 0 && (
-                <View style={styles.subjectsRow}>
-                  <Text style={styles.subjectsLabel}>Subjects</Text>
-                  <View style={styles.subjectsList}>
-                    {student.subjects.map((s, i) => {
-                      // Format timing display for this subject
-                      const hasTimings = s.timings && s.timings.length > 0;
-                      const timingDisplay = hasTimings
-                        ? s
-                            .timings!.map(
-                              (t) =>
-                                `${t.day.slice(0, 3)} ${t.startTime}-${t.endTime}`,
-                            )
-                            .join(", ")
-                        : null;
+						<View style={S.hRight}>
+							<Text style={S.hReceiptLabel}>ADMISSION RECEIPT</Text>
 
-                      return (
-                        <View key={i} style={styles.subjectChip}>
-                          <Text style={styles.subjectChipText}>{s.name}</Text>
-                          {hasTimings ? (
-                            <Text style={styles.subjectTimingText}>
-                              {timingDisplay}
-                            </Text>
-                          ) : (
-                            <Text style={styles.subjectTimingNotSet}>
-                              Time: Not Set
-                            </Text>
-                          )}
-                        </View>
-                      );
-                    })}
-                  </View>
-                </View>
-              )}
-            </View>
+							<View style={S.hSerialWrap}>
+								<Text style={S.hSerialPrefix}>S.No.</Text>
+								<Text style={S.hSerial}>{student.studentId}</Text>
+							</View>
 
-            {/* VERTICAL DIVIDER */}
-            <View style={styles.verticalDivider} />
+							<Text style={S.hDate}>{fmt.date(receiptConfig.printedAt)}</Text>
 
-            {/* RIGHT COLUMN — Financial Summary */}
-            <View style={styles.rightCol}>
-              <View
-                style={[
-                  styles.feeCard,
-                  isPaid ? styles.feeCardPaid : styles.feeCardPending,
-                ]}
-              >
-                {/* Status bar */}
-                <View
-                  style={[
-                    styles.feeStatusBar,
-                    isPaid
-                      ? styles.feeStatusBarPaid
-                      : styles.feeStatusBarPending,
-                  ]}
-                >
-                  <Text style={styles.feeStatusText}>
-                    {isPaid ? "FULLY PAID" : "PAYMENT PENDING"}
-                  </Text>
-                </View>
+							<View
+								style={[
+									S.hStatusPill,
+									isPaid ? S.hStatusPaid : S.hStatusPending,
+								]}
+							>
+								<Text style={isPaid ? S.hStatusTextPaid : S.hStatusTextPending}>
+									{isPaid ? "PAID" : "PENDING"}
+								</Text>
+							</View>
+						</View>
+					</View>
 
-                {/* Fee details */}
-                <View style={styles.feeBody}>
-                  {student.sessionRate && student.sessionRate > 0 ? (
-                    <>
-                      <View style={styles.feeRow}>
-                        <Text style={styles.feeLabel}>Session Rate</Text>
-                        <Text style={styles.feeValue}>
-                          {formatCurrency(student.sessionRate)}
-                        </Text>
-                      </View>
+					{/* ════ INFO STRIP ════ */}
+					<View style={S.infoStrip}>
+						<View style={S.iCell}>
+							<Text style={S.iLabel}>FATHER</Text>
+							<Text style={S.iValue}>{student.fatherName || "—"}</Text>
+						</View>
+						<View style={S.iCellBordered}>
+							<Text style={S.iLabel}>CLASS</Text>
+							<Text style={S.iValueLight}>{fmt.className(student.class)}</Text>
+						</View>
+						<View style={S.iCellBordered}>
+							<Text style={S.iLabel}>CONTACT</Text>
+							<Text style={S.iValueLight}>
+								{fmt.phone(student.parentCell ?? student.studentCell)}
+							</Text>
+						</View>
+						<View style={S.iCellBordered}>
+							<Text style={S.iLabel}>ADMITTED</Text>
+							<Text style={S.iValueLight}>
+								{fmt.date(student.admissionDate)}
+							</Text>
+						</View>
+						<View style={S.iCellBordered}>
+							<Text style={S.iLabel}>RECEIPT ID</Text>
+							<Text
+								style={[
+									S.iValueLight,
+									{ fontSize: 7, fontFamily: "Helvetica-Bold" },
+								]}
+							>
+								{receiptConfig.receiptId}
+							</Text>
+						</View>
+					</View>
 
-                      {student.discountAmount && student.discountAmount > 0 && (
-                        <View style={styles.feeRow}>
-                          <Text style={[styles.feeLabel, styles.discountLabel]}>
-                            Discount
-                          </Text>
-                          <Text style={[styles.feeValue, styles.discountValue]}>
-                            -{formatCurrency(student.discountAmount)}
-                          </Text>
-                        </View>
-                      )}
+					{/* ════ BODY ════ */}
+					<View style={S.body}>
+						{/* ── Left pane — subjects ── */}
+						<View style={S.lPane}>
+							<Text style={S.lPaneLabel}>ENROLLMENT</Text>
 
-                      <View style={styles.feeRow}>
-                        <Text style={styles.feeLabel}>Net Payable</Text>
-                        <Text style={styles.feeValue}>
-                          {formatCurrency(student.totalFee)}
-                        </Text>
-                      </View>
-                    </>
-                  ) : (
-                    <View style={styles.feeRow}>
-                      <Text style={styles.feeLabel}>Total Fee</Text>
-                      <Text style={styles.feeValue}>
-                        {formatCurrency(student.totalFee)}
-                      </Text>
-                    </View>
-                  )}
+							{studentPhotoDataUrl && (
+								<View style={S.photoWrap}>
+									<View style={S.photoBox}>
+										<Image src={studentPhotoDataUrl} style={S.photoImg} />
+									</View>
+								</View>
+							)}
 
-                  <View style={styles.feeRow}>
-                    <Text style={styles.feeLabel}>Paid</Text>
-                    <Text style={styles.feeValue}>
-                      {formatCurrency(student.paidAmount)}
-                    </Text>
-                  </View>
+							{student.subjects && student.subjects.length > 0 ? (
+								student.subjects.map((sub, i) => {
+									const timing = fmt.timing(sub.timings);
+									return (
+										<View key={i} style={S.subRow}>
+											<Text style={S.subName}>{sub.name}</Text>
+											<View style={S.subMeta}>
+												{sub.fee > 0 && (
+													<Text style={S.subFee}>{fmt.currency(sub.fee)}</Text>
+												)}
+												{timing ? (
+													<Text style={S.subTiming}>{timing}</Text>
+												) : (
+													<Text style={S.subTimingNone}>Timing: not set</Text>
+												)}
+											</View>
+										</View>
+									);
+								})
+							) : (
+								<Text style={S.noSubjects}>No subjects enrolled yet.</Text>
+							)}
+						</View>
 
-                  <View style={[styles.feeRow, styles.feeTotalRow]}>
-                    <Text style={[styles.feeLabel, { fontWeight: 700 }]}>
-                      Balance
-                    </Text>
-                    <Text
-                      style={[
-                        styles.feeValue,
-                        { fontSize: 11 },
-                        balance > 0 ? styles.balanceDue : styles.balanceClear,
-                      ]}
-                    >
-                      {formatCurrency(balance)}
-                    </Text>
-                  </View>
-                </View>
-              </View>
+						{/* ── Right pane — fee summary ── */}
+						<View style={S.rPane}>
+							<View style={S.balanceSection}>
+								<Text style={S.balanceLabel}>BALANCE DUE</Text>
+								<View style={S.balanceRow}>
+									<Text style={S.balanceCurrency}>PKR</Text>
+									<Text
+										style={[
+											S.balanceAmount,
+											balance > 0 ? S.balanceDue : S.balanceClear,
+										]}
+									>
+										{(balance || 0).toLocaleString()}
+									</Text>
+								</View>
+								<Text style={S.balanceNote}>
+									{isPaid ? "✓ Account settled" : "• Payment required"}
+								</Text>
+							</View>
 
-              {/* Signature */}
-              <View style={styles.signatureArea}>
-                <View style={styles.signatureLine} />
-                <Text style={styles.signatureLabel}>Authorized Signature</Text>
-              </View>
-            </View>
-          </View>
+							<View style={S.feeSection}>
+								<Text style={S.feeSectionLabel}>FEE SUMMARY</Text>
 
-          {/* ===== FOOTER ===== */}
-          <View style={styles.footer}>
-            <Text style={styles.footerWarning}>Fee is non-refundable</Text>
-            <Text style={styles.footerAddress}>
-              Opp. Islamia College, Danishabad, University Road, Peshawar
-            </Text>
-          </View>
+								{student.sessionRate && student.sessionRate > 0 && (
+									<View style={S.feeRow}>
+										<Text style={S.feeKey}>Session Rate</Text>
+										<Text style={S.feeVal}>
+											{fmt.currency(student.sessionRate)}
+										</Text>
+									</View>
+								)}
 
-          {/* Watermarks */}
-          {!receiptConfig.isOriginal && (
-            <Text style={styles.watermark}>DUPLICATE</Text>
-          )}
-          <Text style={styles.academyWatermark}>GIA</Text>
-        </View>
-      </Page>
-    </Document>
-  );
+								{!!student.discountAmount && student.discountAmount > 0 && (
+									<View style={S.feeRow}>
+										<Text style={S.feeKey}>Discount</Text>
+										<Text style={[S.feeVal, S.feeValRed]}>
+											−{fmt.currency(student.discountAmount)}
+										</Text>
+									</View>
+								)}
+
+								<View style={S.feeRow}>
+									<Text style={S.feeKey}>
+										{student.sessionRate ? "Net Payable" : "Total Fee"}
+									</Text>
+									<Text style={S.feeVal}>{fmt.currency(student.totalFee)}</Text>
+								</View>
+
+								<View style={[S.feeRow, S.feeRowLast]}>
+									<Text style={S.feeKey}>Paid</Text>
+									<Text style={S.feeVal}>
+										{fmt.currency(student.paidAmount)}
+									</Text>
+								</View>
+							</View>
+
+							<View style={S.sigSection}>
+								<View style={S.sigLine} />
+								<Text style={S.sigLabel}>AUTHORIZED SIGNATURE</Text>
+							</View>
+						</View>
+					</View>
+
+					{/* ════ VERSION STRIP ════ */}
+					<View style={S.versionStrip}>
+						<Text
+							style={[
+								S.versionTag,
+								receiptConfig.isOriginal
+									? S.versionTagOriginal
+									: S.versionTagDuplicate,
+							]}
+						>
+							{receiptConfig.isOriginal
+								? "● ORIGINAL COPY"
+								: `● DUPLICATE — COPY #${receiptConfig.version}`}
+						</Text>
+						<Text style={S.versionMeta}>
+							Printed: {fmt.date(receiptConfig.printedAt)}
+						</Text>
+					</View>
+
+					{/* ════ FOOTER ════ */}
+					<View style={S.footer}>
+						<View style={S.fLeft}>
+							<View style={S.fRedDot} />
+							<Text style={S.fWarning}>Fee is non-refundable</Text>
+							<Text style={S.fSep}>·</Text>
+							<Text style={S.fNote}>Not valid for legal purposes</Text>
+						</View>
+						<View style={S.fRight}>
+							<Text style={S.fAddress}>
+								Opp. Islamia College Gate No. 2, University Road, Peshawar
+							</Text>
+							<Text style={S.fSocial}>GIA — GENIUS ISLAMIAN'S ACADEMY</Text>
+						</View>
+					</View>
+
+					{/* ════ WATERMARKS ════ */}
+					<Text style={S.wmGIA}>GIA</Text>
+					{!receiptConfig.isOriginal && (
+						<Text style={S.wmDuplicate}>DUPLICATE</Text>
+					)}
+				</View>
+			</Page>
+		</Document>
+	);
 };
 
 export default ReceiptPDF;
