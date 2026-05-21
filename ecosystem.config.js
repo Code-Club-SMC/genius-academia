@@ -1,0 +1,37 @@
+module.exports = {
+  apps: [
+    {
+      name: "genius-backend",
+      script: "./backend/server.js",
+      cwd: ".",
+      instances: 1,
+      exec_mode: "fork",
+      env: {
+        NODE_ENV: "production",
+        PORT: 5000,
+      },
+      max_restarts: 10,
+      restart_delay: 3000,
+      min_uptime: "10s",
+      max_memory_restart: "500M",
+      error_file: "./logs/backend-error.log",
+      out_file: "./logs/backend-out.log",
+      merge_logs: true,
+    },
+    {
+      name: "genius-frontend",
+      script: "npx",
+      args: "serve frontend/dist -l 3000 -n",
+      cwd: ".",
+      instances: 1,
+      exec_mode: "fork",
+      max_restarts: 10,
+      restart_delay: 3000,
+      min_uptime: "10s",
+      max_memory_restart: "300M",
+      error_file: "./logs/frontend-error.log",
+      out_file: "./logs/frontend-out.log",
+      merge_logs: true,
+    },
+  ],
+};
