@@ -8,18 +8,18 @@ const path = require("path");
 dotenv.config();
 
 const connectDB = async () => {
-  try {
-    const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
-    if (!mongoUri) {
-      throw new Error("MONGO_URI or MONGODB_URI is missing from environment");
-    }
+	try {
+		const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+		if (!mongoUri) {
+			throw new Error("MONGO_URI or MONGODB_URI is missing from environment");
+		}
 
-    await mongoose.connect(mongoUri);
-    console.log("✅ MongoDB Connected Successfully!");
-  } catch (error) {
-    console.error("❌ MongoDB Connection Error:", error.message);
-    process.exit(1);
-  }
+		await mongoose.connect(mongoUri);
+		console.log("✅ MongoDB Connected Successfully!");
+	} catch (error) {
+		console.error("❌ MongoDB Connection Error:", error.message);
+		process.exit(1);
+	}
 };
 
 connectDB();
@@ -28,18 +28,19 @@ const app = express();
 
 // CORS — whitelist allowed origins from env, fallback to localhost for dev
 app.use(
-  cors({
-    origin: process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(",")
-      : [
-          "http://localhost:3000",
-          "http://localhost:5173",
-          "http://72.62.197.86",
-          "http://localhost:8080",
-          "http://localhost:8081",
-        ],
-    credentials: true,
-  }),
+	cors({
+		origin: process.env.ALLOWED_ORIGINS
+			? process.env.ALLOWED_ORIGINS.split(",")
+			: [
+					"http://localhost:3000",
+					"http://localhost:5173",
+					"http://72.62.197.86",
+					"http://72.62.197.86:3000",
+					"http://localhost:8080",
+					"http://localhost:8081",
+				],
+		credentials: true,
+	}),
 );
 
 // CRITICAL ORDER
@@ -54,16 +55,16 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Debug Middleware (only in development)
 if (process.env.NODE_ENV !== "production") {
-  app.use((req, res, next) => {
-    console.log(
-      "📡 Request:",
-      req.method,
-      req.url,
-      "| 🍪 Cookies:",
-      Object.keys(req.cookies || {}),
-    );
-    next();
-  });
+	app.use((req, res, next) => {
+		console.log(
+			"📡 Request:",
+			req.method,
+			req.url,
+			"| 🍪 Cookies:",
+			Object.keys(req.cookies || {}),
+		);
+		next();
+	});
 }
 
 // Import Routes
@@ -112,41 +113,41 @@ app.use("/api/inventory", inventoryRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {
-  res.json({
-    message: "Genius Islamian's Academy ERP API",
-    version: "2.0.0",
-    endpoints: {
-      auth: "/api/auth",
-      students: "/api/students",
-      teachers: "/api/teachers",
-      finance: "/api/finance",
-      config: "/api/config",
-      classes: "/api/classes",
-      sessions: "/api/sessions",
-      timetable: "/api/timetable",
-      expenses: "/api/expenses",
-      users: "/api/users",
-      leads: "/api/leads",
-      gatekeeper: "/api/gatekeeper",
-      public: "/api/public",
-      studentPortal: "/api/student-portal",
-      lectures: "/api/lectures",
-    },
-  });
+	res.json({
+		message: "Genius Islamian's Academy ERP API",
+		version: "2.0.0",
+		endpoints: {
+			auth: "/api/auth",
+			students: "/api/students",
+			teachers: "/api/teachers",
+			finance: "/api/finance",
+			config: "/api/config",
+			classes: "/api/classes",
+			sessions: "/api/sessions",
+			timetable: "/api/timetable",
+			expenses: "/api/expenses",
+			users: "/api/users",
+			leads: "/api/leads",
+			gatekeeper: "/api/gatekeeper",
+			public: "/api/public",
+			studentPortal: "/api/student-portal",
+			lectures: "/api/lectures",
+		},
+	});
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: "Internal Server Error",
-  });
+	console.error(err.stack);
+	res.status(500).json({
+		success: false,
+		message: "Internal Server Error",
+	});
 });
 
 // Start Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📡 API available at http://localhost:${PORT}`);
+	console.log(`🚀 Server is running on port ${PORT}`);
+	console.log(`📡 API available at http://localhost:${PORT}`);
 });
