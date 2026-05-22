@@ -26,6 +26,9 @@ connectDB();
 
 const app = express();
 
+// Trust nginx proxy so req.secure and X-Forwarded-Proto work correctly
+app.set("trust proxy", 1);
+
 // CORS — whitelist allowed origins from env, fallback to localhost for dev
 app.use(
 	cors({

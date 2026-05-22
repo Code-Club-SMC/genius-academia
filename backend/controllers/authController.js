@@ -13,14 +13,17 @@ const generateToken = (userId) => {
 // ========================================
 // UTILITY: Send Cookie Response
 // ========================================
-const sendTokenResponse = (user, statusCode, res, message) => {
+const sendTokenResponse = (user, statusCode, res, req, message) => {
   const token = generateToken(user._id);
+
+  // Determine if connection is actually secure (trust proxy handles nginx X-Forwarded-Proto)
+  const isSecure = req.secure === true;
 
   // Cookie options
   const cookieOptions = {
     httpOnly: true, // Prevents XSS attacks
-    secure: process.env.NODE_ENV === "production", // HTTPS only in production
-    sameSite: "strict", // CSRF protection
+    secure: isSecure, // Only HTTPS when actually on HTTPS
+    sameSite: "lax", // CSRF protection; lax works better for SPAs behind proxy
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
   };
 
@@ -90,7 +93,7 @@ exports.login = async (req, res) => {
     }
 
     // Send token via cookie
-    sendTokenResponse(user, 200, res, `✅ Welcome back, ${user.fullName}!`);
+    sendTokenResponse(user, 200, res, req, `✅ Welcome back, ${user.fullName}!`);
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({
@@ -108,12 +111,14 @@ exports.login = async (req, res) => {
 // ========================================
 exports.logout = async (req, res) => {
   try {
+    const isSecure = req.secure === true;
     res
       .status(200)
       .cookie("authToken", "none", {
         httpOnly: true,
         expires: new Date(Date.now() + 1000), // Expire immediately
-        sameSite: "strict",
+        secure: isSecure,
+        sameSite: "lax",
       })
       .json({
         success: true,
