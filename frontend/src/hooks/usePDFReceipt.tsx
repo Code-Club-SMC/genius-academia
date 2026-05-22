@@ -108,7 +108,7 @@ export function usePDFReceipt() {
     ): Promise<PrintReceiptResult | null> => {
       try {
         const response = await fetch(
-          `${API_BASE_URL}/api/students/${studentId}/print`,
+          `${API_BASE_URL}/students/${studentId}/print`,
           {
             method: "POST",
             headers: {
