@@ -7,7 +7,7 @@ const Configuration = require("../models/Configuration");
 const FeeRecord = require("../models/FeeRecord");
 const Transaction = require("../models/Transaction");
 const Notification = require("../models/Notification");
-const { protect } = require("../middleware/authMiddleware");
+const { protect, restrictTo } = require("../middleware/authMiddleware");
 const { handlePhotoUpload } = require("../middleware/upload");
 const {
   collectFee,
@@ -226,8 +226,8 @@ router.get("/:id", async (req, res) => {
 
 // @route   POST /api/students
 // @desc    Create a new student
-// @access  Public
-router.post("/", async (req, res) => {
+// @access  Protected (Staff/Admin)
+router.post("/", protect, restrictTo("OWNER", "OPERATOR", "ADMIN", "STAFF"), async (req, res) => {
   try {
     console.log("\n📥 FULL REQUEST BODY:", JSON.stringify(req.body, null, 2));
 
@@ -335,6 +335,17 @@ router.post("/", async (req, res) => {
         0,
         Number(sanitizedData.sessionRate) - netTotal,
       );
+    }
+
+    // Capture who admitted this student (audit trail)
+    if (req.user) {
+      sanitizedData.admittedBy = {
+        userId: req.user._id,
+        fullName: req.user.fullName,
+        username: req.user.username,
+        role: req.user.role,
+      };
+      console.log(`👤 Student admitted by: ${req.user.fullName} (${req.user.role})`);
     }
 
     console.log("\n✅ Sanitized Data:", JSON.stringify(sanitizedData, null, 2));

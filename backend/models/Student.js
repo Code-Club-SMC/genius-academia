@@ -253,6 +253,26 @@ const studentSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    // Who admitted this student (audit trail)
+    admittedBy: {
+      userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: false,
+      },
+      fullName: {
+        type: String,
+        trim: true,
+      },
+      username: {
+        type: String,
+        trim: true,
+      },
+      role: {
+        type: String,
+        trim: true,
+      },
+    },
   },
   {
     timestamps: true,

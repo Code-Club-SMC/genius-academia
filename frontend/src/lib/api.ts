@@ -239,6 +239,7 @@ export const studentApi = {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify(studentData),
         });
         const data = await response.json();
@@ -255,6 +256,7 @@ export const studentApi = {
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify(studentData),
         });
         const data = await response.json();
@@ -268,6 +270,7 @@ export const studentApi = {
     delete: async (id: string) => {
         const response = await fetch(`${API_BASE_URL}/students/${id}`, {
             method: 'DELETE',
+            credentials: 'include',
         });
         const data = await response.json();
         if (!data.success) {

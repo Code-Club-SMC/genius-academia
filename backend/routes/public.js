@@ -29,14 +29,14 @@ router.post("/register", publicRegister);
 router.post("/inquiry", publicInquiry);
 
 // ========================================
-// PROTECTED ROUTES (Admin approval)
+// PROTECTED ROUTES (Admin / Staff approval)
 // ========================================
 
 // Get all pending registrations
 router.get(
   "/pending",
   protect,
-  restrictTo("OWNER", "OPERATOR"),
+  restrictTo("OWNER", "OPERATOR", "ADMIN", "STAFF"),
   getPendingRegistrations,
 );
 
@@ -44,7 +44,7 @@ router.get(
 router.get(
   "/pending/:id",
   protect,
-  restrictTo("OWNER", "OPERATOR"),
+  restrictTo("OWNER", "OPERATOR", "ADMIN", "STAFF"),
   getPendingStudent,
 );
 
@@ -55,7 +55,7 @@ router.get("/pending-count", protect, getPendingCount);
 router.get(
   "/next-id",
   protect,
-  restrictTo("OWNER", "OPERATOR"),
+  restrictTo("OWNER", "OPERATOR", "ADMIN", "STAFF"),
   getNextStudentId,
 );
 
@@ -63,7 +63,7 @@ router.get(
 router.post(
   "/approve/:id",
   protect,
-  restrictTo("OWNER", "OPERATOR"),
+  restrictTo("OWNER", "OPERATOR", "ADMIN", "STAFF"),
   approveRegistration,
 );
 
@@ -71,7 +71,7 @@ router.post(
 router.delete(
   "/reject/:id",
   protect,
-  restrictTo("OWNER", "OPERATOR"),
+  restrictTo("OWNER", "OPERATOR", "ADMIN", "STAFF"),
   rejectRegistration,
 );
 
@@ -79,7 +79,7 @@ router.delete(
 router.patch(
   "/update-credentials/:id",
   protect,
-  restrictTo("OWNER", "OPERATOR"),
+  restrictTo("OWNER", "OPERATOR", "ADMIN", "STAFF"),
   updateStudentCredentials,
 );
 

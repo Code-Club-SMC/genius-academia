@@ -72,7 +72,7 @@ const App = () => (
               <Route
                 path="/admissions"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="admissions">
                     <Admissions />
                   </ProtectedRoute>
                 }
@@ -80,7 +80,7 @@ const App = () => (
               <Route
                 path="/students"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="students">
                     <Students />
                   </ProtectedRoute>
                 }
@@ -88,7 +88,7 @@ const App = () => (
               <Route
                 path="/students/:id"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="students">
                     <StudentProfile />
                   </ProtectedRoute>
                 }
@@ -96,7 +96,7 @@ const App = () => (
               <Route
                 path="/teachers"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="teachers">
                     <Teachers />
                   </ProtectedRoute>
                 }
@@ -104,7 +104,7 @@ const App = () => (
               <Route
                 path="/teachers/:id"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="teachers">
                     <TeacherProfile />
                   </ProtectedRoute>
                 }
@@ -112,7 +112,7 @@ const App = () => (
               <Route
                 path="/finance"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="finance">
                     <Finance />
                   </ProtectedRoute>
                 }
@@ -120,7 +120,7 @@ const App = () => (
               <Route
                 path="/classes"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="classes">
                     <Classes />
                   </ProtectedRoute>
                 }
@@ -128,7 +128,7 @@ const App = () => (
               <Route
                 path="/timetable"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="timetable">
                     <Timetable />
                   </ProtectedRoute>
                 }
@@ -136,7 +136,7 @@ const App = () => (
               <Route
                 path="/sessions"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="sessions">
                     <Sessions />
                   </ProtectedRoute>
                 }
@@ -144,7 +144,7 @@ const App = () => (
               <Route
                 path="/configuration"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute ownerOnly>
                     <Configuration />
                   </ProtectedRoute>
                 }
@@ -152,7 +152,7 @@ const App = () => (
               <Route
                 path="/payroll"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute ownerOnly>
                     <Payroll />
                   </ProtectedRoute>
                 }
@@ -160,7 +160,7 @@ const App = () => (
               <Route
                 path="/leads"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="inquiries">
                     <Leads />
                   </ProtectedRoute>
                 }
@@ -168,7 +168,7 @@ const App = () => (
               <Route
                 path="/registrations"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="registrations">
                     <PendingApprovals />
                   </ProtectedRoute>
                 }
@@ -176,7 +176,7 @@ const App = () => (
               <Route
                 path="/seat-management"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute requiredPermission="seat_management">
                     <SeatManagementPage />
                   </ProtectedRoute>
                 }

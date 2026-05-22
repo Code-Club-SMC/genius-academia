@@ -425,6 +425,29 @@ const S = StyleSheet.create({
 		letterSpacing: 0.5,
 	},
 
+	// ── Admitted by strip ─────────────────────
+	admittedByStrip: {
+		flexDirection: "row",
+		justifyContent: "space-between",
+		alignItems: "center",
+		paddingHorizontal: 20,
+		paddingVertical: 3,
+		borderTopWidth: 1,
+		borderTopColor: C.border,
+		backgroundColor: C.lightGrey,
+	},
+	admittedByLabel: {
+		fontSize: 6,
+		fontFamily: "Helvetica-Bold",
+		color: C.textMuted,
+		letterSpacing: 0.8,
+	},
+	admittedByValue: {
+		fontSize: 7,
+		fontFamily: "Helvetica-Bold",
+		color: C.textDark,
+	},
+
 	// ── Version strip ─────────────────────────
 	versionStrip: {
 		flexDirection: "row",
@@ -549,6 +572,11 @@ export interface StudentPDFData {
 		timings?: Array<{ day: string; startTime: string; endTime: string }>;
 	}>;
 	photo?: string | null;
+	admittedBy?: {
+		fullName?: string;
+		username?: string;
+		role?: string;
+	} | null;
 }
 
 export interface ReceiptPDFConfig {
@@ -829,6 +857,17 @@ export const ReceiptPDF = ({
 							</View>
 						</View>
 					</View>
+
+					{/* ════ ADMITTED BY STRIP ════ */}
+					{student.admittedBy?.fullName && (
+						<View style={S.admittedByStrip}>
+							<Text style={S.admittedByLabel}>ADMITTED BY</Text>
+							<Text style={S.admittedByValue}>
+								{student.admittedBy.fullName}
+								{student.admittedBy.role && ` • ${student.admittedBy.role}`}
+							</Text>
+						</View>
+					)}
 
 					{/* ════ VERSION STRIP ════ */}
 					<View style={S.versionStrip}>

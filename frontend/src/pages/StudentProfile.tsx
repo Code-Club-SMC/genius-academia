@@ -277,6 +277,24 @@ export default function StudentProfile() {
                     </p>
                   </div>
                 </div>
+
+                {student.admittedBy?.fullName && (
+                  <div className="flex items-start gap-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Admitted By
+                      </p>
+                      <p className="font-medium">
+                        {student.admittedBy.fullName}
+                        {student.admittedBy.role && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({student.admittedBy.role})
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
