@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,8 @@ import {
   FileText,
   HandCoins,
   ClipboardCheck,
+  ClipboardList,
+  Armchair,
   GraduationCap,
   Loader2,
   CreditCard,
@@ -117,6 +120,7 @@ const CHART_COLORS = [
 ];
 
 const OwnerDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -868,7 +872,7 @@ const OwnerDashboard = () => {
               <Button
                 size="lg"
                 className="h-16 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-semibold shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300"
-                onClick={() => (window.location.href = "/finance")}
+                onClick={() => navigate("/finance")}
               >
                 <div className="flex flex-col items-center gap-1">
                   <div className="flex items-center gap-2">
@@ -898,7 +902,7 @@ const OwnerDashboard = () => {
               <Button
                 size="lg"
                 className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg hover:-translate-y-1 hover:shadow-2xl transition-all duration-300"
-                onClick={() => (window.location.href = "/finance?tab=expenses")}
+                onClick={() => navigate("/finance?tab=expenses")}
               >
                 <FileText className="mr-2 h-5 w-5" />
                 Record Expense
@@ -908,7 +912,7 @@ const OwnerDashboard = () => {
                 size="lg"
                 variant="outline"
                 className="w-full h-14 border-2 border-red-500 text-red-600 font-semibold hover:bg-red-50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
-                onClick={() => (window.location.href = "/admissions")}
+                onClick={() => navigate("/admissions")}
               >
                 <UserPlus className="mr-2 h-5 w-5" />
                 New Admission
@@ -918,7 +922,7 @@ const OwnerDashboard = () => {
                 size="lg"
                 variant="outline"
                 className="w-full h-14 border-2 border-violet-500 text-violet-600 font-semibold hover:bg-violet-50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
-                onClick={() => (window.location.href = "/payroll")}
+                onClick={() => navigate("/payroll")}
               >
                 <HandCoins className="mr-2 h-5 w-5" />
                 Payroll
@@ -1935,6 +1939,7 @@ const TeacherDashboard = () => {
 // 👨‍💼 STAFF DASHBOARD COMPONENT
 // ========================================
 const StaffDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [staffStats, setStaffStats] = useState<any>({
     totalStudents: 0,
@@ -2016,6 +2021,13 @@ const StaffDashboard = () => {
       color: "from-emerald-500 to-emerald-600",
     },
     {
+      perm: "registrations",
+      label: "Registrations",
+      icon: ClipboardList,
+      href: "/registrations",
+      color: "from-cyan-500 to-cyan-600",
+    },
+    {
       perm: "students",
       label: "View Students",
       icon: GraduationCap,
@@ -2044,6 +2056,13 @@ const StaffDashboard = () => {
       color: "from-rose-500 to-rose-600",
     },
     {
+      perm: "seat_management",
+      label: "Seat Management",
+      icon: Armchair,
+      href: "/seat-management",
+      color: "from-fuchsia-500 to-fuchsia-600",
+    },
+    {
       perm: "timetable",
       label: "Timetable",
       icon: CalendarDays,
@@ -2061,7 +2080,7 @@ const StaffDashboard = () => {
       perm: "inquiries",
       label: "Inquiries",
       icon: ClipboardCheck,
-      href: "/inquiries",
+      href: "/leads",
       color: "from-orange-500 to-orange-600",
     },
   ].filter((a) => hasPerm(a.perm));
@@ -2110,7 +2129,7 @@ const StaffDashboard = () => {
         {hasPerm("students") && (
           <div
             className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-sky-500 cursor-pointer"
-            onClick={() => (window.location.href = "/students")}
+            onClick={() => navigate("/students")}
           >
             <div className="flex items-center justify-between">
               <div>
@@ -2132,7 +2151,7 @@ const StaffDashboard = () => {
         {hasPerm("teachers") && (
           <div
             className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-violet-500 cursor-pointer"
-            onClick={() => (window.location.href = "/teachers")}
+            onClick={() => navigate("/teachers")}
           >
             <div className="flex items-center justify-between">
               <div>
@@ -2154,7 +2173,7 @@ const StaffDashboard = () => {
         {hasPerm("classes") && (
           <div
             className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-emerald-500 cursor-pointer"
-            onClick={() => (window.location.href = "/classes")}
+            onClick={() => navigate("/classes")}
           >
             <div className="flex items-center justify-between">
               <div>
@@ -2193,7 +2212,7 @@ const StaffDashboard = () => {
                   key={action.perm}
                   size="lg"
                   className={`h-14 bg-gradient-to-r ${action.color} text-white font-semibold shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300`}
-                  onClick={() => (window.location.href = action.href)}
+                  onClick={() => navigate(action.href)}
                 >
                   <action.icon className="mr-2 h-5 w-5" />
                   {action.label}

@@ -166,6 +166,10 @@ const App = () => (
                 }
               />
               <Route
+                path="/inquiries"
+                element={<Navigate to="/leads" replace />}
+              />
+              <Route
                 path="/registrations"
                 element={
                   <ProtectedRoute requiredPermission="registrations">
