@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -870,17 +870,19 @@ const OwnerDashboard = () => {
               </Button>
 
               <Button
+                asChild
                 size="lg"
                 className="h-16 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-semibold shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300"
-                onClick={() => navigate("/finance")}
               >
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Full Finance</span>
+                <Link to="/finance">
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      <span>Full Finance</span>
+                    </div>
+                    <span className="text-xs opacity-80">Detailed Ledger</span>
                   </div>
-                  <span className="text-xs opacity-80">Detailed Ledger</span>
-                </div>
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -900,32 +902,38 @@ const OwnerDashboard = () => {
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-3">
               <Button
+                asChild
                 size="lg"
-                className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg hover:-translate-y-1 hover:shadow-2xl transition-all duration-300"
-                onClick={() => navigate("/finance?tab=expenses")}
+                className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-lg hover:-translate-y-1 hover:shadow-2xl transition-all duration-300 cursor-pointer"
               >
-                <FileText className="mr-2 h-5 w-5" />
-                Record Expense
+                <Link to="/finance?tab=expenses">
+                  <FileText className="mr-2 h-5 w-5" />
+                  Record Expense
+                </Link>
               </Button>
 
               <Button
+                asChild
                 size="lg"
                 variant="outline"
-                className="w-full h-14 border-2 border-red-500 text-red-600 font-semibold hover:bg-red-50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
-                onClick={() => navigate("/admissions")}
+                className="w-full h-14 border-2 border-red-500 text-red-600 font-semibold hover:bg-red-50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-pointer"
               >
-                <UserPlus className="mr-2 h-5 w-5" />
-                New Admission
+                <Link to="/admissions">
+                  <UserPlus className="mr-2 h-5 w-5" />
+                  New Admission
+                </Link>
               </Button>
 
               <Button
+                asChild
                 size="lg"
                 variant="outline"
-                className="w-full h-14 border-2 border-violet-500 text-violet-600 font-semibold hover:bg-violet-50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300"
-                onClick={() => navigate("/payroll")}
+                className="w-full h-14 border-2 border-violet-500 text-violet-600 font-semibold hover:bg-violet-50 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-pointer"
               >
-                <HandCoins className="mr-2 h-5 w-5" />
-                Payroll
+                <Link to="/payroll">
+                  <HandCoins className="mr-2 h-5 w-5" />
+                  Payroll
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -2127,69 +2135,66 @@ const StaffDashboard = () => {
       {/* Stats Cards - Permission Based */}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {hasPerm("students") && (
-          <div
-            className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-sky-500 cursor-pointer"
-            onClick={() => navigate("/students")}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Total Students
-                </p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">
-                  {staffStats.totalStudents}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">Enrolled students</p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-lg">
-                <GraduationCap className="h-6 w-6" />
+          <Link to="/students" className="block">
+            <div className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-sky-500 cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Total Students
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">
+                    {staffStats.totalStudents}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">Enrolled students</p>
+                </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-lg">
+                  <GraduationCap className="h-6 w-6" />
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         )}
 
         {hasPerm("teachers") && (
-          <div
-            className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-violet-500 cursor-pointer"
-            onClick={() => navigate("/teachers")}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Total Teachers
-                </p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">
-                  {staffStats.totalTeachers}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">Active teachers</p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-lg">
-                <Users className="h-6 w-6" />
+          <Link to="/teachers" className="block">
+            <div className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-violet-500 cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Total Teachers
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">
+                    {staffStats.totalTeachers}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">Active teachers</p>
+                </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 text-white shadow-lg">
+                  <Users className="h-6 w-6" />
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         )}
 
         {hasPerm("classes") && (
-          <div
-            className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-emerald-500 cursor-pointer"
-            onClick={() => navigate("/classes")}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Total Classes
-                </p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">
-                  {staffStats.totalClasses}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">Active classes</p>
-              </div>
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
-                <BookOpen className="h-6 w-6" />
+          <Link to="/classes" className="block">
+            <div className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-emerald-500 cursor-pointer">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Total Classes
+                  </p>
+                  <p className="text-2xl font-bold text-slate-900 mt-1">
+                    {staffStats.totalClasses}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">Active classes</p>
+                </div>
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg">
+                  <BookOpen className="h-6 w-6" />
+                </div>
               </div>
             </div>
-          </div>
+          </Link>
         )}
       </div>
 
@@ -2210,12 +2215,14 @@ const StaffDashboard = () => {
               {quickActions.map((action) => (
                 <Button
                   key={action.perm}
+                  asChild
                   size="lg"
-                  className={`h-14 bg-gradient-to-r ${action.color} text-white font-semibold shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300`}
-                  onClick={() => navigate(action.href)}
+                  className={`h-14 bg-gradient-to-r ${action.color} text-white font-semibold shadow-lg hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300 cursor-pointer`}
                 >
-                  <action.icon className="mr-2 h-5 w-5" />
-                  {action.label}
+                  <Link to={action.href}>
+                    <action.icon className="mr-2 h-5 w-5" />
+                    {action.label}
+                  </Link>
                 </Button>
               ))}
             </div>
