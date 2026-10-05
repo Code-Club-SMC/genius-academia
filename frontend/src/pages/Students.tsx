@@ -468,7 +468,7 @@ const Students = () => {
 			</HeaderBanner>
 
 			{/* Filters - All in one row */}
-			<div className="mt-6 rounded-xl border border-border bg-card p-4 card-shadow">
+			<div className="mt-6 rounded-md border border-border bg-card p-3 sm:p-4 shadow-none">
 				<div className="flex flex-wrap items-center gap-4">
 					<div className="relative flex-1 min-w-[200px]">
 						<Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -539,7 +539,7 @@ const Students = () => {
 			</div>
 
 			{/* Students Table */}
-			<div className="mt-6 rounded-xl border border-border bg-card card-shadow overflow-hidden">
+			<div className="mt-6 rounded-md border border-border bg-card shadow-none overflow-hidden">
 				{isLoading ? (
 					<div className="flex items-center justify-center p-12">
 						<Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -575,7 +575,7 @@ const Students = () => {
 					<div className="overflow-x-auto">
 						<Table>
 							<TableHeader>
-								<TableRow className="bg-secondary hover:bg-secondary">
+								<TableRow className="bg-muted/50 hover:bg-muted/50">
 									<TableHead className="font-semibold">ID</TableHead>
 									<TableHead className="font-semibold">Student</TableHead>
 									<TableHead className="font-semibold">Seat</TableHead>
@@ -605,7 +605,7 @@ const Students = () => {
 											return (
 												<TableRow
 													key={student?._id || Math.random()}
-													className={`hover:bg-secondary/50 ${student.studentStatus === "Withdrawn" ? "opacity-50" : ""}`}
+													className={student.studentStatus === "Withdrawn" ? "opacity-60" : ""}
 												>
 													<TableCell className="font-medium font-mono text-xs text-muted-foreground">
 														{student.studentId}
@@ -715,37 +715,16 @@ const Students = () => {
 														</div>
 													</TableCell>
 													<TableCell className="text-center">
-														<div
-															className="inline-flex items-center justify-center"
-															style={{
-																filter:
-																	student.studentStatus === "Withdrawn"
-																		? "drop-shadow(0 0 8px rgba(234, 88, 12, 0.3))"
-																		: student.status === "active"
-																			? "drop-shadow(0 0 8px rgba(34, 197, 94, 0.3))"
-																			: "drop-shadow(0 0 8px rgba(148, 163, 184, 0.2))",
-															}}
-														>
+														<div className="inline-flex items-center justify-center">
 															{student.studentStatus === "Withdrawn" ? (
-																<span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
-																	Withdrawn
-																</span>
+																<StatusBadge status="withdrawn" />
 															) : (
 																<StatusBadge status={student.status} />
 															)}
 														</div>
 													</TableCell>
 													<TableCell className="text-center">
-														<div
-															className="inline-flex items-center justify-center"
-															style={{
-																filter:
-																	student.feeStatus === "paid" ||
-																	student.feeStatus === "Paid"
-																		? "drop-shadow(0 0 8px rgba(34, 197, 94, 0.3))"
-																		: "drop-shadow(0 0 8px rgba(217, 119, 6, 0.3))",
-															}}
-														>
+														<div className="inline-flex items-center justify-center">
 															<StatusBadge status={student.feeStatus} />
 														</div>
 													</TableCell>

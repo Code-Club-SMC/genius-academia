@@ -87,20 +87,20 @@ export function TeacherPayoutHistory({ teacherId }: TeacherPayoutHistoryProps) {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-yellow-400/80 hover:bg-yellow-400">
-                  <TableHead className="font-bold text-gray-900">
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
+                  <TableHead className="font-semibold">
                     S.No
                   </TableHead>
-                  <TableHead className="font-bold text-gray-900">
+                  <TableHead className="font-semibold">
                     Payment Date
                   </TableHead>
-                  <TableHead className="font-bold text-gray-900 text-right">
+                  <TableHead className="font-semibold text-right">
                     Amount
                   </TableHead>
-                  <TableHead className="font-bold text-gray-900">
+                  <TableHead className="font-semibold">
                     Status
                   </TableHead>
-                  <TableHead className="font-bold text-gray-900">
+                  <TableHead className="font-semibold">
                     Notes
                   </TableHead>
                 </TableRow>

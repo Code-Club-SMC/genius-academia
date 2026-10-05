@@ -272,7 +272,7 @@ const FinanceOverview = () => {
 						<div className="max-h-96 overflow-auto rounded-lg border">
 							<Table>
 								<TableHeader>
-									<TableRow className="bg-secondary hover:bg-secondary">
+									<TableRow className="bg-muted/50 hover:bg-muted/50">
 										<TableHead className="font-semibold">Date</TableHead>
 										<TableHead className="font-semibold">Type</TableHead>
 										<TableHead className="font-semibold">Category</TableHead>
@@ -642,7 +642,7 @@ const AssetRegistry = () => {
 					) : (
 						<Table>
 							<TableHeader>
-								<TableRow className="bg-secondary hover:bg-secondary">
+								<TableRow className="bg-muted/50 hover:bg-muted/50">
 									<TableHead className="font-semibold">Item Name</TableHead>
 									<TableHead className="font-semibold">Investor</TableHead>
 									<TableHead className="font-semibold">Purchase Date</TableHead>
@@ -1080,7 +1080,7 @@ const DailyExpenses = () => {
 					) : (
 						<Table>
 							<TableHeader>
-								<TableRow className="bg-secondary hover:bg-secondary">
+								<TableRow className="bg-muted/50 hover:bg-muted/50">
 									<TableHead className="font-semibold">Date</TableHead>
 									<TableHead className="font-semibold">Category</TableHead>
 									<TableHead className="font-semibold">Description</TableHead>

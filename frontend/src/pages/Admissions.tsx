@@ -972,32 +972,32 @@ const Admissions = () => {
 			)}
 			{/* Main Form — only render after pending data sync is complete (or if no pending data) */}
 			{pendingDataSynced && (
-				<div className="mt-6 grid gap-6 lg:grid-cols-3">
+				<div className="mt-4 grid gap-4 lg:grid-cols-3">
 					{/* Student Information */}
 					<div className="lg:col-span-2">
-						<div className="rounded-xl border border-border bg-card p-6 card-shadow">
-							<h3 className="mb-6 text-lg font-semibold text-foreground">
+						<div className="rounded-md border border-border bg-card p-4 sm:p-5 shadow-none">
+							<h3 className="mb-3.5 text-sm sm:text-base font-semibold text-foreground tracking-tight">
 								Student Information
 							</h3>
 
 							{/* Profile Photo Section */}
-							<div className="mb-6 flex flex-col items-center gap-3 p-4 bg-secondary/20 rounded-xl border border-border">
-								<Label className="text-sm font-medium text-muted-foreground">
+							<div className="mb-4 flex flex-col items-center gap-2 p-3 bg-secondary/15 rounded-md border border-border">
+								<Label className="text-xs font-medium text-muted-foreground">
 									Student Photo
 								</Label>
 								<ImageCapture
 									value={photo || undefined}
 									onChange={(img) => setPhoto(img)}
-									size="lg"
+									size="md"
 								/>
-								<p className="text-xs text-muted-foreground text-center">
+								<p className="text-[11px] text-muted-foreground text-center">
 									Take a webcam photo or upload an image file
 								</p>
 							</div>
 
-							<div className="grid gap-4 sm:grid-cols-2">
-								<div className="space-y-2">
-									<Label htmlFor="name">Student Name *</Label>
+							<div className="grid gap-3 sm:grid-cols-2">
+								<div className="space-y-1.5">
+									<Label htmlFor="name" className="text-xs font-medium">Student Name *</Label>
 									<Input
 										id="name"
 										value={studentName}
@@ -1203,15 +1203,15 @@ const Admissions = () => {
 					</div>
 
 					{/* Office Use Section */}
-					<div className="space-y-6">
-						<div className="rounded-xl border border-border bg-card p-6 card-shadow">
-							<h3 className="mb-6 text-lg font-semibold text-foreground">
+					<div className="space-y-4">
+						<div className="rounded-md border border-border bg-card p-4 sm:p-5 shadow-none">
+							<h3 className="mb-3.5 text-sm sm:text-base font-semibold text-foreground tracking-tight">
 								Office Use Only
 							</h3>
 
-							<div className="space-y-4">
-								<div className="space-y-2">
-									<Label htmlFor="admissionDate">Admission Date</Label>
+							<div className="space-y-3">
+								<div className="space-y-1.5">
+									<Label htmlFor="admissionDate" className="text-xs font-medium">Admission Date</Label>
 									<Input
 										id="admissionDate"
 										type="date"

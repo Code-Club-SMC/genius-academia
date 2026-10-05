@@ -176,11 +176,11 @@ export default function TeacherProfile() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-700">Active</Badge>;
+        return <Badge className="bg-emerald-700 text-white hover:bg-emerald-700">Active</Badge>;
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-700">Inactive</Badge>;
+        return <Badge className="bg-slate-500 text-white hover:bg-slate-500">Inactive</Badge>;
       case "suspended":
-        return <Badge className="bg-red-100 text-red-700">Suspended</Badge>;
+        return <Badge className="bg-red-700 text-white hover:bg-red-700">Suspended</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }

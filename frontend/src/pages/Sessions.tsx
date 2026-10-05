@@ -200,37 +200,37 @@ const Sessions = () => {
     switch (status) {
       case 'active':
         return {
-          bg: 'bg-green-50 dark:bg-green-900/20',
-          border: 'border-green-200 dark:border-green-800',
-          glow: 'shadow-green-500/20',
-          text: 'text-green-700 dark:text-green-400',
-          badgeBg: 'bg-green-100 dark:bg-green-900/50',
-          progressColor: 'bg-gradient-to-r from-sky-500 to-sky-400',
-          progressTrack: 'bg-sky-100',
+          bg: 'bg-card',
+          border: 'border-emerald-300 dark:border-emerald-800',
+          glow: '',
+          text: 'text-white',
+          badgeBg: 'bg-emerald-700',
+          progressColor: 'bg-emerald-600',
+          progressTrack: 'bg-muted',
           icon: CheckCircle2,
           label: 'Current Session'
         };
       case 'upcoming':
         return {
-          bg: 'bg-sky-50 dark:bg-sky-900/20',
-          border: 'border-sky-200 dark:border-sky-800',
-          glow: 'shadow-sky-500/20',
-          text: 'text-sky-700 dark:text-sky-400',
-          badgeBg: 'bg-sky-100 dark:bg-sky-900/50',
-          progressColor: 'bg-slate-300',
-          progressTrack: 'bg-slate-100',
+          bg: 'bg-card',
+          border: 'border-blue-200 dark:border-blue-800',
+          glow: '',
+          text: 'text-white',
+          badgeBg: 'bg-blue-600',
+          progressColor: 'bg-blue-600',
+          progressTrack: 'bg-muted',
           icon: Clock,
           label: 'Upcoming'
         };
       case 'completed':
         return {
-          bg: 'bg-slate-50 dark:bg-slate-800/50',
-          border: 'border-slate-200 dark:border-slate-700',
-          glow: 'shadow-slate-500/10',
-          text: 'text-slate-500 dark:text-slate-400',
-          badgeBg: 'bg-slate-100 dark:bg-slate-800',
+          bg: 'bg-card',
+          border: 'border-border',
+          glow: '',
+          text: 'text-white',
+          badgeBg: 'bg-slate-600',
           progressColor: 'bg-slate-400',
-          progressTrack: 'bg-slate-200',
+          progressTrack: 'bg-muted',
           icon: AlertCircle,
           label: 'Completed'
         };
@@ -312,13 +312,11 @@ const Sessions = () => {
               return (
                 <div
                   key={session._id}
-                  className={`relative rounded-xl border-2 p-6 pb-4 transition-all duration-300 hover:scale-[1.02] overflow-hidden ${styles.bg} ${styles.border} ${session.status === 'active' ? 'shadow-lg shadow-green-500/20' : 'shadow-md'
-                    }`}
-                  style={{ borderRadius: '0.75rem' }}
+                  className={`relative rounded-md border p-4 sm:p-5 overflow-hidden ${styles.bg} ${styles.border} shadow-none`}
                 >
                   {/* Status Badge */}
                   <div className="absolute top-4 right-4">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${styles.badgeBg} ${styles.text}`}>
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold uppercase tracking-wider ${styles.badgeBg} ${styles.text}`}>
                       <StatusIcon className="h-3.5 w-3.5" />
                       {styles.label}
                     </span>

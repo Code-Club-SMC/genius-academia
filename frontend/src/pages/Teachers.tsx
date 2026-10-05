@@ -290,14 +290,14 @@ const Teachers = () => {
           ? Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-border bg-card p-4 card-shadow animate-pulse"
+                className="rounded-md border border-border bg-card p-3 sm:p-4 shadow-none animate-pulse"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="h-4 bg-muted rounded w-20 mb-2"></div>
                     <div className="h-5 bg-muted rounded w-24"></div>
                   </div>
-                  <div className="h-10 w-10 bg-muted rounded-lg"></div>
+                  <div className="h-10 w-10 bg-muted rounded"></div>
                 </div>
                 <div className="mt-2 h-4 bg-muted rounded w-32"></div>
               </div>
@@ -332,8 +332,7 @@ const Teachers = () => {
                 return (
                   <div
                     key={subjectKey}
-                    className="rounded-xl border border-border bg-card p-4 card-shadow"
-                    style={{ borderRadius: "0.75rem" }}
+                    className="rounded-md border border-border bg-card p-3 sm:p-4 shadow-none"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -368,7 +367,7 @@ const Teachers = () => {
       </div>
 
       {/* Teachers Table */}
-      <div className="mt-6 rounded-xl border border-border bg-card card-shadow overflow-hidden">
+      <div className="mt-6 rounded-md border border-border bg-card shadow-none overflow-hidden">
         {isLoading ? (
           // Loading State
           <div className="flex items-center justify-center py-12">
@@ -392,8 +391,7 @@ const Teachers = () => {
             </p>
             <Button
               onClick={() => setIsAddModalOpen(true)}
-              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
-              style={{ borderRadius: "0.75rem" }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-none"
             >
               <UserPlus className="mr-2 h-4 w-4" />
               Add Your First Teacher
@@ -404,7 +402,7 @@ const Teachers = () => {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-secondary hover:bg-secondary">
+                <TableRow className="bg-muted/50 hover:bg-muted/50">
                   <TableHead className="font-semibold">Teacher</TableHead>
                   <TableHead className="font-semibold">Subject</TableHead>
                   <TableHead className="font-semibold">Contact</TableHead>
@@ -417,7 +415,7 @@ const Teachers = () => {
               </TableHeader>
               <TableBody>
                 {teachers.map((teacher: any) => (
-                  <TableRow key={teacher._id} className="hover:bg-secondary/50">
+                  <TableRow key={teacher._id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {teacher.profileImage ? (

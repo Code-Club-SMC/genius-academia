@@ -79,11 +79,11 @@ export default function StudentProfile() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-100 text-green-700">Active</Badge>;
+        return <Badge className="bg-emerald-700 text-white hover:bg-emerald-700">Active</Badge>;
       case "inactive":
-        return <Badge className="bg-gray-100 text-gray-700">Inactive</Badge>;
+        return <Badge className="bg-slate-500 text-white hover:bg-slate-500">Inactive</Badge>;
       case "graduated":
-        return <Badge className="bg-blue-100 text-blue-700">Graduated</Badge>;
+        return <Badge className="bg-blue-700 text-white hover:bg-blue-700">Graduated</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -93,21 +93,21 @@ export default function StudentProfile() {
     switch (status) {
       case "paid":
         return (
-          <Badge className="bg-green-100 text-green-700 gap-1">
+          <Badge className="bg-emerald-700 text-white hover:bg-emerald-700 gap-1">
             <CheckCircle className="h-3 w-3" />
             Paid
           </Badge>
         );
       case "partial":
         return (
-          <Badge className="bg-yellow-100 text-yellow-700 gap-1">
+          <Badge className="bg-orange-600 text-white hover:bg-orange-600 gap-1">
             <Clock className="h-3 w-3" />
             Partial
           </Badge>
         );
       case "pending":
         return (
-          <Badge className="bg-red-100 text-red-700 gap-1">
+          <Badge className="bg-amber-600 text-white hover:bg-amber-600 gap-1">
             <AlertCircle className="h-3 w-3" />
             Pending
           </Badge>
@@ -414,29 +414,29 @@ export default function StudentProfile() {
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="bg-yellow-400/80 hover:bg-yellow-400">
-                      <TableHead className="font-bold text-gray-900">
+                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                      <TableHead className="font-semibold">
                         S.No
                       </TableHead>
-                      <TableHead className="font-bold text-gray-900">
+                      <TableHead className="font-semibold">
                         R.No
                       </TableHead>
-                      <TableHead className="font-bold text-gray-900">
+                      <TableHead className="font-semibold">
                         Date
                       </TableHead>
-                      <TableHead className="font-bold text-gray-900">
+                      <TableHead className="font-semibold">
                         Month
                       </TableHead>
-                      <TableHead className="font-bold text-gray-900">
+                      <TableHead className="font-semibold">
                         Subject
                       </TableHead>
-                      <TableHead className="font-bold text-gray-900 text-right">
+                      <TableHead className="font-semibold text-right">
                         Fee
                       </TableHead>
-                      <TableHead className="font-bold text-gray-900">
+                      <TableHead className="font-semibold">
                         Status
                       </TableHead>
-                      <TableHead className="font-bold text-gray-900">
+                      <TableHead className="font-semibold">
                         Collected By
                       </TableHead>
                     </TableRow>

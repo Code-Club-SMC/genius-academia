@@ -116,7 +116,7 @@ export default function SeatManagementPage() {
 
       <div className="p-4 md:p-6 space-y-6">
         {/* ── Selector Card ── */}
-        <Card className="border-border bg-card card-shadow">
+        <Card className="border-border bg-card shadow-none">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
               <LayoutGrid className="h-5 w-5 text-primary" />
@@ -225,7 +225,7 @@ export default function SeatManagementPage() {
 
         {/* ── Seat Grid ── */}
         {showGrid && selectedClassId && selectedSessionId && (
-          <Card className="border-border bg-card card-shadow overflow-hidden">
+          <Card className="border-border bg-card shadow-none overflow-hidden">
             <CardHeader className="pb-2 border-b border-border">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Armchair className="h-5 w-5 text-primary" />

@@ -168,18 +168,18 @@ export function TopBar({ title }: TopBarProps) {
         : "bg-blue-500";
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 sm:h-16 items-center justify-between border-b border-border bg-card px-3 sm:px-6">
-      <div className="flex items-center gap-2 sm:gap-3">
+    <header className="sticky top-0 z-30 flex h-11 sm:h-12 items-center justify-between border-b border-border bg-card/95 backdrop-blur px-3 sm:px-5">
+      <div className="flex items-center gap-2 sm:gap-2.5">
         {/* Mobile hamburger */}
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden shrink-0"
+          className="md:hidden shrink-0 h-8 w-8"
           onClick={toggleMobile}
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </Button>
-        <h1 className="text-base sm:text-xl font-semibold text-foreground truncate">
+        <h1 className="text-sm sm:text-base font-semibold text-foreground tracking-tight truncate">
           {title}
         </h1>
       </div>
@@ -318,9 +318,6 @@ export function TopBar({ title }: TopBarProps) {
                 </p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleLogout}

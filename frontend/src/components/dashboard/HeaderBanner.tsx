@@ -8,14 +8,14 @@ interface HeaderBannerProps {
 
 export function HeaderBanner({ title, subtitle, children }: HeaderBannerProps) {
   return (
-    <div className="header-gradient rounded-xl p-4 sm:p-6 text-primary-foreground">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="header-gradient rounded-lg px-4 py-3 sm:px-5 sm:py-3.5 text-primary-foreground shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
         <div>
-          <h2 className="text-lg sm:text-2xl font-bold">{title}</h2>
+          <h2 className="text-base sm:text-lg font-bold tracking-tight leading-tight">{title}</h2>
           {subtitle && (
-            <p className="mt-1 text-sm sm:text-base text-primary-foreground/80">
+            <div className="mt-0.5 text-xs text-primary-foreground/85">
               {subtitle}
-            </p>
+            </div>
           )}
         </div>
         {children}

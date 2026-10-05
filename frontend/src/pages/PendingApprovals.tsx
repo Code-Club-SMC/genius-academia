@@ -250,7 +250,7 @@ export default function PendingApprovals() {
 			</div>
 
 			{/* Pending List */}
-			<Card className="border-gray-200/80 shadow-sm rounded-2xl overflow-hidden">
+			<Card className="border-border shadow-none rounded-md overflow-hidden">
 				<CardContent className="p-0">
 					{isLoading ? (
 						<div className="flex items-center justify-center py-16">

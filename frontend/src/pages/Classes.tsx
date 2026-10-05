@@ -914,7 +914,7 @@ export default function Classes() {
       </div>
 
       {/* Data Table */}
-      <div className="mt-6 rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div className="mt-6 rounded-md border border-border bg-card shadow-none overflow-hidden">
         {isClassesLoading ? (
           <div className="flex items-center justify-center p-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

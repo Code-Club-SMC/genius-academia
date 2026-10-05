@@ -16,11 +16,11 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       <Sidebar />
       <div
         className={`flex flex-col h-full transition-all duration-300 ${
-          collapsed ? "md:ml-16" : "md:ml-64"
+          collapsed ? "md:ml-14" : "md:ml-56"
         }`}
       >
         <TopBar title={title} />
-        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-5">
           {children}
         </main>
       </div>

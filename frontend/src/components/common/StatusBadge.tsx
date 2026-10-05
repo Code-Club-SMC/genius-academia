@@ -1,70 +1,90 @@
 import { cn } from "@/lib/utils";
 
 interface StatusBadgeProps {
-  status: "paid" | "pending" | "partial" | "active" | "inactive" | "success" | "warning" | "default" | "upcoming" | "completed";
+  status: string;
   children?: React.ReactNode;
 }
 
-const statusStyles: Record<StatusBadgeProps["status"], { bg: string; text: string; label: string }> = {
+const statusStyles: Record<string, { bg: string; text: string; label: string }> = {
   paid: {
-    bg: "bg-success-light",
-    text: "text-success",
+    bg: "bg-emerald-700",
+    text: "text-white",
     label: "Paid",
   },
   pending: {
-    bg: "bg-amber-50",
-    text: "text-amber-600",
+    bg: "bg-amber-600",
+    text: "text-white",
     label: "Pending",
   },
   partial: {
-    bg: "bg-warning-light",
-    text: "text-warning",
+    bg: "bg-orange-600",
+    text: "text-white",
     label: "Partial",
   },
   active: {
-    bg: "bg-success-light",
-    text: "text-success",
+    bg: "bg-emerald-700",
+    text: "text-white",
     label: "Active",
   },
   inactive: {
-    bg: "bg-secondary",
-    text: "text-muted-foreground",
+    bg: "bg-slate-500",
+    text: "text-white",
     label: "Inactive",
   },
   success: {
-    bg: "bg-success-light",
-    text: "text-success",
+    bg: "bg-emerald-700",
+    text: "text-white",
     label: "Success",
   },
   warning: {
-    bg: "bg-warning-light",
-    text: "text-warning",
+    bg: "bg-amber-600",
+    text: "text-white",
     label: "Warning",
   },
   default: {
-    bg: "bg-secondary",
-    text: "text-muted-foreground",
+    bg: "bg-slate-500",
+    text: "text-white",
     label: "Default",
   },
   upcoming: {
-    bg: "bg-warning-light",
-    text: "text-warning",
+    bg: "bg-blue-600",
+    text: "text-white",
     label: "Upcoming",
   },
   completed: {
-    bg: "bg-muted",
-    text: "text-muted-foreground",
+    bg: "bg-slate-600",
+    text: "text-white",
     label: "Completed",
+  },
+  withdrawn: {
+    bg: "bg-rose-700",
+    text: "text-white",
+    label: "Withdrawn",
+  },
+  overdue: {
+    bg: "bg-rose-700",
+    text: "text-white",
+    label: "Overdue",
+  },
+  suspended: {
+    bg: "bg-rose-700",
+    text: "text-white",
+    label: "Suspended",
   },
 };
 
 export function StatusBadge({ status, children }: StatusBadgeProps) {
-  const styles = statusStyles[status];
+  const normalized = (status || "").toLowerCase().trim();
+  const styles = statusStyles[normalized] || {
+    bg: "bg-slate-600",
+    text: "text-white",
+    label: status || "Unknown",
+  };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
+        "inline-flex items-center rounded px-2 py-0.5 text-[11px] font-semibold tracking-wide shadow-none select-none",
         styles.bg,
         styles.text
       )}
