@@ -1,5 +1,6 @@
 const Teacher = require("../models/Teacher");
 const User = require("../models/User");
+const Configuration = require("../models/Configuration");
 
 /**
  * @route   GET /api/teachers
@@ -94,7 +95,7 @@ exports.createTeacher = async (req, res) => {
       "bytes",
     );
 
-    const { name, phone, subject, joiningDate, compensation, profileImage } =
+    const { name, phone, subject, joiningDate, compensation, profileImage, status } =
       req.body;
 
     // Validate required fields
@@ -105,32 +106,29 @@ exports.createTeacher = async (req, res) => {
       });
     }
 
-    // Fetch global settings for smart defaults
-    let settings = await Settings.findOne();
-    if (!settings) {
-      // Create default settings if none exist
-      settings = new Settings();
-      await settings.save();
-    }
+    // Fetch global configuration for smart defaults
+    const config = await Configuration.findOne();
+    const defaultTeacherShare = config?.salaryConfig?.teacherShare ?? 70;
+    const defaultAcademyShare = config?.salaryConfig?.academyShare ?? 30;
 
     // Prepare compensation object with smart defaults
     let compensationData = {
-      type: compensation?.type || settings.defaultCompensationMode,
+      type: compensation?.type || "percentage",
     };
 
     // Apply smart defaults based on compensation type
     if (compensationData.type === "percentage") {
       compensationData.teacherShare =
-        compensation?.teacherShare ?? settings.defaultTeacherShare;
+        compensation?.teacherShare ?? defaultTeacherShare;
       compensationData.academyShare =
-        compensation?.academyShare ?? settings.defaultAcademyShare;
+        compensation?.academyShare ?? defaultAcademyShare;
       // Explicitly set unused fields to null
       compensationData.fixedSalary = null;
       compensationData.baseSalary = null;
       compensationData.profitShare = null;
     } else if (compensationData.type === "fixed") {
       compensationData.fixedSalary =
-        compensation?.fixedSalary ?? settings.defaultBaseSalary;
+        compensation?.fixedSalary ?? 0;
       // Explicitly set unused fields to null
       compensationData.teacherShare = null;
       compensationData.academyShare = null;
@@ -220,6 +218,7 @@ exports.createTeacher = async (req, res) => {
       phone,
       subject,
       joiningDate: joiningDate || Date.now(),
+      status: status || "active",
       compensation: compensationData,
       profileImage: profileImage || null,
       userId: user._id,
