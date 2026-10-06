@@ -4,6 +4,7 @@ const Class = require("../models/Class");
 const Student = require("../models/Student");
 const Timetable = require("../models/Timetable");
 const Configuration = require("../models/Configuration");
+const Session = require("../models/Session");
 
 // Helper: Remove duplicate subjects (case-insensitive), keeping the one with highest fee
 const deduplicateSubjects = (subjects) => {
@@ -33,13 +34,14 @@ const deduplicateSubjects = (subjects) => {
 };
 
 // ========== CONFLICT DETECTION HELPER ==========
-// Checks if a room is already occupied at the given time/day
+// Checks if a room is already occupied at the given time/day within overlapping session dates
 const checkScheduleConflict = async (
   days,
   startTime,
   endTime,
   roomNumber,
   excludeId = null,
+  sessionId = null,
 ) => {
   if (!days || !days.length || !roomNumber || roomNumber === "TBD") {
     return null; // No conflict check needed if room is TBD
@@ -54,6 +56,16 @@ const checkScheduleConflict = async (
   const newStart = timeToMinutes(startTime);
   const newEnd = timeToMinutes(endTime);
 
+  // Fetch the target class's session (if provided) to compare date ranges
+  let targetSession = null;
+  if (sessionId) {
+    try {
+      targetSession = await Session.findById(sessionId);
+    } catch (err) {
+      console.warn("Could not find session by ID:", sessionId, err.message);
+    }
+  }
+
   // Find all classes in the same room on any of the same days
   const query = {
     days: { $in: days },
@@ -65,9 +77,35 @@ const checkScheduleConflict = async (
     query._id = { $ne: excludeId };
   }
 
-  const potentialConflicts = await Class.find(query);
+  const potentialConflicts = await Class.find(query).populate("session");
 
   for (const existing of potentialConflicts) {
+    // If both classes have sessions with defined start/end dates:
+    // Check if their session date ranges overlap.
+    // If sessions have non-overlapping date ranges, they can safely share the same room.
+    if (
+      targetSession &&
+      targetSession.startDate &&
+      targetSession.endDate &&
+      existing.session &&
+      existing.session.startDate &&
+      existing.session.endDate
+    ) {
+      const targetStart = new Date(targetSession.startDate).getTime();
+      const targetEnd = new Date(targetSession.endDate).getTime();
+      const existingStart = new Date(existing.session.startDate).getTime();
+      const existingEnd = new Date(existing.session.endDate).getTime();
+
+      // Date ranges overlap if: targetStart <= existingEnd AND targetEnd >= existingStart
+      const sessionDatesOverlap =
+        targetStart <= existingEnd && targetEnd >= existingStart;
+
+      if (!sessionDatesOverlap) {
+        // Different session date periods — allow same room number!
+        continue;
+      }
+    }
+
     const existingStart = timeToMinutes(existing.startTime);
     const existingEnd = timeToMinutes(existing.endTime);
 
@@ -80,6 +118,7 @@ const checkScheduleConflict = async (
         conflictingClass: existing.classTitle,
         conflictingDays: overlappingDays,
         conflictingTime: `${existing.startTime} - ${existing.endTime}`,
+        conflictingSession: existing.session?.sessionName || "Another Session",
         room: roomNumber,
       };
     }
@@ -287,6 +326,8 @@ router.post("/", async (req, res) => {
         classData.startTime,
         classData.endTime,
         classData.roomNumber,
+        null,
+        classData.session,
       );
 
       if (conflict) {
@@ -372,6 +413,7 @@ router.put("/:id", async (req, res) => {
     const startTime = updateData.startTime || classDoc.startTime;
     const endTime = updateData.endTime || classDoc.endTime;
     const roomNumber = updateData.roomNumber || classDoc.roomNumber;
+    const session = updateData.session || classDoc.session;
 
     if (days && startTime && endTime && roomNumber) {
       const conflict = await checkScheduleConflict(
@@ -380,6 +422,7 @@ router.put("/:id", async (req, res) => {
         endTime,
         roomNumber,
         classDoc._id, // Exclude current class from conflict check
+        session,
       );
 
       if (conflict) {

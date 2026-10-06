@@ -505,6 +505,121 @@ export default function Classes() {
   });
 
   // ==========================================================================
+  // ROOM CONFLICT DETECTION (SESSION DATE AWARE)
+  // ==========================================================================
+  const roomConflict = useMemo(() => {
+    const room = formData.roomNumber?.trim();
+    if (!room || room.toUpperCase() === "TBD") return null;
+    if (
+      !formData.days?.length ||
+      !formData.startTime ||
+      !formData.endTime ||
+      !formData.session
+    ) {
+      return null;
+    }
+
+    const timeToMinutes = (timeStr: string) => {
+      const [h, m] = timeStr.split(":").map(Number);
+      return (h || 0) * 60 + (m || 0);
+    };
+
+    const newStart = timeToMinutes(formData.startTime);
+    const newEnd = timeToMinutes(formData.endTime);
+
+    // Selected session object
+    const selectedSession = sessions.find(
+      (s) => (s._id || s.sessionId) === formData.session,
+    );
+
+    for (const existing of classes) {
+      // Skip self when editing
+      if (modalState.type === "edit" && existing._id === formData._id) continue;
+      if (existing.status !== "active") continue;
+      if (!existing.roomNumber || existing.roomNumber.toUpperCase() === "TBD") continue;
+      if (existing.roomNumber.trim().toLowerCase() !== room.toLowerCase()) continue;
+
+      // Extract existing class session
+      const existingSessionId =
+        typeof existing.session === "string"
+          ? existing.session
+          : existing.session?._id || existing.session?.sessionId;
+
+      const existingSessionObj =
+        typeof existing.session === "object" && existing.session?.startDate
+          ? existing.session
+          : sessions.find((s) => (s._id || s.sessionId) === existingSessionId);
+
+      // Check session date range overlap:
+      // If sessions have non-overlapping date ranges, the room can be safely reused!
+      if (
+        selectedSession?.startDate &&
+        selectedSession?.endDate &&
+        existingSessionObj?.startDate &&
+        existingSessionObj?.endDate
+      ) {
+        const targetStart = new Date(selectedSession.startDate).getTime();
+        const targetEnd = new Date(selectedSession.endDate).getTime();
+        const existStart = new Date(existingSessionObj.startDate).getTime();
+        const existEnd = new Date(existingSessionObj.endDate).getTime();
+
+        const sessionDatesOverlap =
+          targetStart <= existEnd && targetEnd >= existStart;
+
+        if (!sessionDatesOverlap) {
+          // Different session date range — allow same room number!
+          continue;
+        }
+      }
+
+      // Check day overlap
+      const commonDays = (formData.days || []).filter((d) =>
+        (existing.days || []).includes(d),
+      );
+      if (!commonDays.length) continue;
+
+      // Check time overlap
+      if (existing.startTime && existing.endTime) {
+        const existStart = timeToMinutes(existing.startTime);
+        const existEnd = timeToMinutes(existing.endTime);
+        if (newStart < existEnd && newEnd > existStart) {
+          return {
+            conflictingClass: existing.classTitle,
+            conflictingDays: commonDays,
+            conflictingTime: `${existing.startTime} - ${existing.endTime}`,
+            sessionName:
+              existingSessionObj?.sessionName ||
+              existingSessionObj?.name ||
+              "another session",
+          };
+        }
+      }
+    }
+
+    return null;
+  }, [
+    formData.roomNumber,
+    formData.days,
+    formData.startTime,
+    formData.endTime,
+    formData.session,
+    formData._id,
+    modalState.type,
+    classes,
+    sessions,
+  ]);
+
+  const isRoomSharedAcrossDifferentSessions = useMemo(() => {
+    const room = formData.roomNumber?.trim();
+    if (!room || room.toUpperCase() === "TBD" || roomConflict) return false;
+    return classes.some(
+      (c) =>
+        c._id !== formData._id &&
+        c.roomNumber?.trim().toLowerCase() === room.toLowerCase(),
+    );
+  }, [formData.roomNumber, formData._id, roomConflict, classes]);
+
+  // ==========================================================================
   // FORM HANDLING
   // ==========================================================================
   const validateForm = (): boolean => {
@@ -518,6 +633,10 @@ export default function Classes() {
       errors.days = "At least one day must be selected";
     if (!formData.startTime) errors.schedule = "Start time is required";
     if (!formData.endTime) errors.schedule = "End time is required";
+
+    if (roomConflict) {
+      errors.room = `Room ${formData.roomNumber} is occupied by "${roomConflict.conflictingClass}" (${roomConflict.conflictingTime}) during overlapping dates`;
+    }
 
     const unassignedSubjects = (formData.subjects || []).filter((s: any) => {
       const subjectName = typeof s === "string" ? s : s.name;
@@ -1336,7 +1455,29 @@ export default function Classes() {
                         roomNumber: e.target.value,
                       }))
                     }
+                    className={cn(
+                      (roomConflict || formErrors.room) &&
+                        "border-red-500 focus-visible:ring-red-500",
+                    )}
                   />
+                  {roomConflict && (
+                    <p className="text-[11px] text-red-600 flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3 shrink-0" />
+                      Occupied by "{roomConflict.conflictingClass}" ({roomConflict.conflictingTime})
+                    </p>
+                  )}
+                  {!roomConflict && formErrors.room && (
+                    <p className="text-[11px] text-red-600 flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3 shrink-0" />
+                      {formErrors.room}
+                    </p>
+                  )}
+                  {!roomConflict && !formErrors.room && isRoomSharedAcrossDifferentSessions && (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-1">
+                      <CheckCircle2 className="h-3 w-3 shrink-0" />
+                      Available (different session dates)
+                    </p>
+                  )}
                 </div>
               </div>
               {formErrors.schedule && (
